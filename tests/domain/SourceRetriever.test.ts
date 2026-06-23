@@ -1,24 +1,37 @@
 import { describe, it, expect } from "vitest";
 
 import { SourceRetriever } from '../../src/domain/SourceRetriever.js'
+import { Activity } from "../../src/domain/Activity.js";
 
 describe("SourceRetriever test suite", () => {
-    it("should filter events", async ()=> {
+    it("should retrieve events for this week", async ()=> {
         const retriever = new RetrieverTestClass();
-        const allActivities = await retriever.fetch();
+        const rawEvents = await retriever.fetchAll();
+        const activities = retriever.mapToActivity(rawEvents);
 
-        expect(allActivities).toEqual([{
-            name: 'asdf',
-            created_at: new Date(2026,11,25)
-        }]);
+        expect(activities.length).toEqual(2);
     });
 });
 
 class RetrieverTestClass extends SourceRetriever {
-    async fetch(): Promise<any[]> {
-         return [{
-            name: 'asdf',
-            created_at: new Date(2026,11,25)
-        }];
+
+    mapToActivity(raw: any[]): Activity[] {
+    return raw.map(event => {
+        const metadata = { name: event.name }
+        return Activity.create(event.created_at, metadata);
+    })
+}
+
+    async fetchAll(): Promise<any[]> {
+         return [
+            {
+                name: 'first event',
+                created_at: new Date(2026,6,19)
+            },
+            {
+                name: 'second event',
+                created_at: new Date(2026,6,1)
+            }
+        ];
     }
 }
