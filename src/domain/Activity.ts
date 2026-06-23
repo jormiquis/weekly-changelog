@@ -18,6 +18,5 @@ export class Activity {
           const diff = today.getTime() - this.createdAt.getTime();
 
           return diff >= 0 && diff <= sevenDaysInMs
-
      }
 }
