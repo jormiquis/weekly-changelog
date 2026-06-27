@@ -31,18 +31,9 @@ describe("gitHub sourceRetriever implementation test", () => {
     it("returns only activities within the last seven days", async () => {
         const today = new Date('2026-06-20T10:00:00Z');
 
-        vi.useFakeTimers();
-        vi.setSystemTime(today);
-
-
-
         const retriever = new GithubSourceRetriever(mockOctokit);
-        const activities = await retriever.retrieve();
+        const activities = await retriever.retrieve(today);
 
         expect(activities).toHaveLength(1);
-
-        vi.useRealTimers();
-
-
     });
 });

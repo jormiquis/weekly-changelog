@@ -4,16 +4,14 @@ export abstract class SourceRetriever {
      abstract fetchAll(): Promise <any[]>;
      abstract mapToActivity(raw: any[]): Activity[];
 
-     filterByWeek(activities: Activity[]): Activity[] {
-          const today = new Date();
-
+     filterByWeek(activities: Activity[], today: Date): Activity[] {
           return activities.filter(activity => activity.hasBeenCreatedOnLastWeek(today));
      }
 
-     async retrieve(): Promise<Activity[]> {
+     async retrieve(today: Date): Promise<Activity[]> {
           const all = await this.fetchAll();
           const activities = this.mapToActivity(all);
 
-          return this.filterByWeek(activities);
+          return this.filterByWeek(activities, today);
      }
 }
