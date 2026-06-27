@@ -4,7 +4,7 @@ export abstract class SourceRetriever {
      abstract fetchAll(): Promise <any[]>;
      abstract mapToActivity(raw: any[]): Activity[];
 
-     filterByWeek(activities: Activity[], today: Date): Activity[] {
+     private filterByWeek(activities: Activity[], today: Date): Activity[] {
           return activities.filter(activity => activity.hasBeenCreatedOnLastWeek(today));
      }
 
