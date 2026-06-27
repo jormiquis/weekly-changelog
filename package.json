@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsx src/main.ts",
-    "weekly": "tsx src/jobs/test.ts"
+    "build": "tsc",
+    "weekly": "node dist/main.js"
   },
   "keywords": [],
   "author": "",

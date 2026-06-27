@@ -2,3 +2,5 @@
 pnpm-lock.yaml
 vitest.config.ts
 /.vscode
+vitest.config.d.ts
+*.map
