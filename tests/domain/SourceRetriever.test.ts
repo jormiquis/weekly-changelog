@@ -14,7 +14,7 @@ describe("SourceRetriever", () => {
 
     const activities = await retriever.retrieve()
 
-    expect(activities).toHaveLength(1)
+    expect(activities).toHaveLength(1);
 
     vi.useRealTimers();
   })
