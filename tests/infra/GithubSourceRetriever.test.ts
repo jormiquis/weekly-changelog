@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Octokit } from 'octokit'
-import { GithubSourceRetriever } from "../../../src/infra/GithubSourceRetriever.js";
+import { GithubSourceRetriever } from "../../src/infra/GithubSourceRetriever.js";
 
 
 describe("gitHub sourceRetriever implementation test", () => {
