@@ -4,3 +4,4 @@ vitest.config.ts
 /.vscode
 vitest.config.d.ts
 /dist
+.env
