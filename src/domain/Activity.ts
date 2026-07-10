@@ -2,12 +2,12 @@ export class Activity {
 
     constructor(
         private createdAt: Date,
-        private metaData: Object
+        readonly metaData: Record<string, unknown>
     ) {}
 
     static create(
         createdAt: Date,
-        metaData: Object
+        metaData: Record<string, unknown>
     ) {
         return new Activity(createdAt, metaData);
     }
