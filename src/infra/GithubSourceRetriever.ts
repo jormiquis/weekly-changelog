@@ -39,8 +39,6 @@ export class GithubSourceRetriever extends SourceRetriever {
         commits,
         diff
       }
-
-
     })
   )
 
