@@ -24,7 +24,7 @@ describe("gitHub sourceRetriever implementation test", () => {
     const mockOctokit = {
     rest: {
         activity: {
-            listPublicEventsForUser: vi.fn().mockResolvedValue({
+            listEventsForAuthenticatedUser: vi.fn().mockResolvedValue({
                 data: ghEvents
             })
         },

@@ -6,7 +6,7 @@ import 'dotenv/config'
 
 const today = new Date();
 const userName = process.env.GITHUB_USERNAME || 'jorMiquis';
-const octokit = new Octokit();
+const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
 const githubRetriever = new GithubSourceRetriever(octokit, userName);
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY! });
