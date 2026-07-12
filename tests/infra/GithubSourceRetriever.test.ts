@@ -69,11 +69,12 @@ describe("gitHub sourceRetriever implementation test", () => {
             const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
             const activities = await retriever.retrieve(today);
 
-            activities.forEach(activity => {
-                if(activity.metaData.type==='PushEvent') {
-                    const metaDataKeys = Object.keys(activity.metaData);
-                    expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commits', 'diff']));
-                }
+            const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
+
+            pushEvents.forEach(pushEvent => {
+                const metaDataKeys = Object.keys(pushEvent.metaData);
+
+                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commits', 'diff']));
             });
 
         });
