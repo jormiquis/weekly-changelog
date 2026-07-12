@@ -36,6 +36,7 @@ export class GithubSourceRetriever extends SourceRetriever {
 
           return {
             created_at: event.created_at,
+            type: 'PushEvent',
             repo: event.repo,
             commits,
             diff
@@ -43,7 +44,7 @@ export class GithubSourceRetriever extends SourceRetriever {
         })
       )
 
-  return enriched
+  return enriched;
 }
 
     mapToActivity(raw: any[]): Activity[] {
