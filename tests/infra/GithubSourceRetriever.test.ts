@@ -61,6 +61,20 @@ describe("gitHub sourceRetriever implementation test", () => {
             const activities = await retriever.retrieve(today);
 
             activities.forEach(activity => { expect( activity.metaData.commits).toHaveLength(2) });
+        });
+
+        it("gets correct payload on metaData pushEvent", async () => {
+            const today = new Date('2026-06-20T10:00:00Z');
+
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+            const activities = await retriever.retrieve(today);
+
+            activities.forEach(activity => {
+                if(activity.metaData.type==='PushEvent') {
+                    const metaDataKeys = Object.keys(activity.metaData);
+                    expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commits', 'diff']));
+                }
+            });
 
         });
     });
