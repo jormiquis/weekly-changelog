@@ -1,41 +1,6 @@
 import type { Activity } from '../../domain/Activity.js';
+import { isPushEvent, isCreateRepoEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
 import type { CardData, CardSection } from './CardData.js';
-
-interface PushEventMeta {
-  [key: string]: unknown
-  type: 'PushEvent'
-  repo: { name: string }
-  commitMessages: { message: string }[]
-}
-
-interface CreateRepoEventMeta {
-  [key: string]: unknown
-  source: 'github'
-  type: 'CreateEvent'
-  entityCreated: 'repository'
-  repo: string
-  description: string
-}
-
-interface NotionEntryMeta {
-  [key: string]: unknown
-  source: 'notion'
-  entry_emoji?: string
-  tags: string[]
-  title: string
-}
-
-function isPushEvent(metaData: Record<string, unknown>): metaData is PushEventMeta {
-  return metaData.type === 'PushEvent'
-}
-
-function isCreateRepoEvent(metaData: Record<string, unknown>): metaData is CreateRepoEventMeta {
-  return metaData.type === 'CreateEvent' && metaData.entityCreated === 'repository'
-}
-
-function isNotionEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {
-  return metaData.source === 'notion'
-}
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName

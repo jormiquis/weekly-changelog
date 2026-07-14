@@ -10,9 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -20,51 +18,165 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 24px;
-      padding: 40px 20px;
+      gap: 40px;
+      padding: 40px 20px 60px;
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 45%, #6d28d9 100%);
+      background-attachment: fixed;
       color: #ffffff;
     }
 
-    .card {
-      width: 100%;
-      max-width: 1200px;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-    }
+    .page { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 40px; }
 
-    .card img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
+    .card { border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.14); }
+    .card img { display: block; width: 100%; height: auto; }
 
-    footer {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.6);
-      text-align: center;
-    }
+    .dashboard-section h2 { font-size: 22px; font-weight: 600; margin: 0 0 16px; }
 
-    footer a {
-      color: rgba(255, 255, 255, 0.85);
-      text-decoration: none;
-    }
+    .entry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 
-    footer a:hover {
-      text-decoration: underline;
+    .entry-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: 3px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
     }
+    .accent-teal { --accent: #2dd4bf; --accent-bg: rgba(45, 212, 191, 0.16); }
+    .accent-pink { --accent: #f472b6; --accent-bg: rgba(244, 114, 182, 0.16); }
+    .accent-amber { --accent: #fbbf24; --accent-bg: rgba(251, 191, 36, 0.16); }
+
+    .entry-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .entry-title { font-size: 17px; font-weight: 600; color: #ffffff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .entry-title:hover { text-decoration: underline; }
+    .emoji { font-size: 18px; }
+
+    .pill { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+
+    .pushes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .push { background: rgba(255, 255, 255, 0.04); border-radius: 10px; padding: 12px 14px; }
+    .push-head { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+    .diff-link { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; }
+    .diff-link:hover { text-decoration: underline; }
+
+    .commits { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .commits li { font-size: 14px; color: rgba(255, 255, 255, 0.85); }
+    .commits li::before { content: '– '; color: rgba(255, 255, 255, 0.4); }
+
+    .description { font-size: 14px; color: rgba(255, 255, 255, 0.75); margin: 0; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .tag { font-size: 12px; font-weight: 500; color: #fbbf24; background: rgba(251, 191, 36, 0.16); padding: 3px 10px; border-radius: 999px; }
+
+    .sources { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+    .sources a, .sources span { color: rgba(255, 255, 255, 0.7); word-break: break-all; }
+    .sources a { color: #93c5fd; }
+
+    .empty-state { text-align: center; color: rgba(255, 255, 255, 0.6); font-size: 15px; padding: 20px 0; }
+
+    footer { font-size: 14px; color: rgba(255, 255, 255, 0.6); text-align: center; }
+    footer a { color: rgba(255, 255, 255, 0.85); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img src="card.png" alt="Weekly changelog card">
+  <div class="page">
+    <div class="card">
+      <img src="card.png" alt="Weekly changelog card">
+    </div>
+    
+    <section class="dashboard-section">
+      <h2>Commits</h2>
+      <div class="entry-grid">
+      <article class="entry-card accent-teal">
+        <header class="entry-head">
+          <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
+          <span class="pill">16 commits</span>
+        </header>
+        <ul class="pushes">
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/56dec1af29ce8aa245b0df0996f776ddf863e63b...774e597e4a7b0720d85ba9c03028a6153a583cbe.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: created dashboard</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/5094085bb8aa2ab25de0f059e6b45730877fbeb2...56dec1af29ce8aa245b0df0996f776ddf863e63b.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: added index html</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/3b84b26212e9a01eb139725aa6959af7a2571288...5094085bb8aa2ab25de0f059e6b45730877fbeb2.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>chore: disable Jekyll for GitHub Pages</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/54568f90cce7bb49eee96ab2318a25f6e9ed30af...3b84b26212e9a01eb139725aa6959af7a2571288.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: added card component</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/4cbdd683d0c5ecbbfd45ca4b3c28b70e3c662dec...54568f90cce7bb49eee96ab2318a25f6e9ed30af.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: added rule to gh mapper for just capturing pushes for owner repos</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/3e9a1dc3a7e37aa8536ec353d133b5687168c109...4cbdd683d0c5ecbbfd45ca4b3c28b70e3c662dec.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/a4f4bdce48bc813c8fb24187f6dbd14682c922b6...3e9a1dc3a7e37aa8536ec353d133b5687168c109.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li>
+        </ul>
+      </li>
+      <li class="push">
+        <div class="push-head">
+          <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...a4f4bdce48bc813c8fb24187f6dbd14682c922b6.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        </div>
+        <ul class="commits">
+          <li>added commits management on gh push event</li>
+        </ul>
+      </li></ul>
+      </article></div>
+    </section>
+    
+    
+    <section class="dashboard-section">
+      <h2>Knowledge gained</h2>
+      <div class="entry-grid">
+      <article class="entry-card accent-amber">
+        <header class="entry-head">
+          <span class="entry-title"><span class="emoji">📝</span>Brag document, work diary for software engineers</span>
+        </header>
+        <div class="tags"><span class="tag">Documentation</span><span class="tag">good-practices</span></div>
+        <div class="sources"><a href="https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/" target="_blank" rel="noopener">https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/</a><a href="https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com" target="_blank" rel="noopener">https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com</a></div>
+      </article></div>
+    </section>
+    
   </div>
   <footer>
-    How is this card generated? &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Jul 14, 10:08 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
 </body>
 </html>

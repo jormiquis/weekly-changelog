@@ -9,6 +9,8 @@ import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEven
 import { NotionEventMapper } from './infra/notion/NotionEventMapper.js';
 import { renderCard } from "./ui/card/renderCard.js";
 import { buildCardData } from "./ui/card/toCardData.js";
+import { buildDashboardData } from "./ui/dashboard/toDashboardData.js";
+import { renderDashboard } from "./ui/dashboard/renderDashboard.js";
 
 const today = new Date();
 const weekLabel = `Week of ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
@@ -34,3 +36,9 @@ const png = await renderCard(cardData);
 
 writeFileSync('docs/card.png', png);
 console.log('Card generated at docs/card.png');
+
+const dashboardData = buildDashboardData(activities, { week: weekLabel });
+const dashboardHtml = renderDashboard(dashboardData);
+
+writeFileSync('docs/index.html', dashboardHtml);
+console.log('Dashboard generated at docs/index.html');
