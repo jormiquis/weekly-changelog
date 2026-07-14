@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { Octokit } from 'octokit'
-import { GithubSourceRetriever } from "../../src/infra/github/GithubSourceRetriever.js";
-import { GithubPushEventMapper } from "../../src/infra/github/GithubPushEventMapper.js";
-import { GithubCreateRepoEventMapper } from "../../src/infra/github/GithubCreateRepoEventMapper.js";
+import { GithubSourceRetriever } from "../../../src/infra/github/GithubSourceRetriever.js";
+import { GithubPushEventMapper } from "../../../src/infra/github/GithubPushEventMapper.js";
+import { GithubCreateRepoEventMapper } from "../../../src/infra/github/GithubCreateRepoEventMapper.js";
 
 
 describe("gitHub sourceRetriever implementation test", () => {
@@ -118,9 +118,8 @@ describe("gitHub sourceRetriever implementation test", () => {
             pushEvents.forEach(PushEvent => {
                 const metaDataKeys = Object.keys(PushEvent.metaData);
 
-                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commitMessages', 'diff', 'type']));
+                expect(metaDataKeys).toEqual(['repo', 'type', 'diff', 'commitMessages']);
             });
-
         });
 
         it("gets correct payload on metaData createEvent", async () => {
@@ -135,7 +134,7 @@ describe("gitHub sourceRetriever implementation test", () => {
             pushEvents.forEach(PushEvent => {
                 const metaDataKeys = Object.keys(PushEvent.metaData);
 
-                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'description', 'type', 'entityCreated']));
+                expect(metaDataKeys).toEqual(['source', 'type', 'entityCreated', 'repo', 'description']);
             });
 
         });

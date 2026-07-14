@@ -10,7 +10,7 @@ export abstract class SourceRetriever {
           return raw.map(event => {
                const mapper = this.mappers.find(mapper => mapper.canHandle(event));
                return mapper?.map(event);
-          }).filter((a): a is Activity => !!a)
+          }).filter((activity): activity is Activity => !!activity)
      }
 
      private filterByWeek(activities: Activity[], today: Date): Activity[] {
