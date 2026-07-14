@@ -8,7 +8,7 @@ export class NotionSourceRetriever extends SourceRetriever {
         private readonly notion: Client,
         private readonly databaseId: string
     ) {
-        super();
+        super([]);
     }
 
    async fetchAll(): Promise<any[]> {

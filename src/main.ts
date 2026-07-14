@@ -1,5 +1,5 @@
 import { Octokit } from "octokit";
-import { GithubSourceRetriever } from "./infra/GithubSourceRetriever.js";
+import { GithubSourceRetriever } from "./infra/github/GithubSourceRetriever.js";
 import { NotionSourceRetriever } from "./infra/NotionSourceRetriever.js";
 import { Client } from "@notionhq/client";
 import 'dotenv/config'

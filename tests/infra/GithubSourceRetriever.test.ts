@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { Octokit } from 'octokit'
-import { GithubSourceRetriever } from "../../src/infra/GithubSourceRetriever.js";
+import { GithubSourceRetriever } from "../../src/infra/github/GithubSourceRetriever.js";
+import { GithubPushEventMapper } from "../../src/infra/github/GithubPushEventMapper.js";
+import { GithubCreateRepoEventMapper } from "../../src/infra/github/GithubCreateRepoEventMapper.js";
 
 
 describe("gitHub sourceRetriever implementation test", () => {
@@ -67,8 +69,9 @@ describe("gitHub sourceRetriever implementation test", () => {
 
     it("returns only activities within the last seven days", async () => {
         const today = new Date('2026-06-20T10:00:00Z');
-
-        const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+        const ghPushMapper = new GithubPushEventMapper();
+        const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
+        const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis',[ghPushMapper,ghCreateRepoMapper ]);
         const activities = await retriever.retrieve(today);
 
         expect(activities).toHaveLength(2);
@@ -76,8 +79,9 @@ describe("gitHub sourceRetriever implementation test", () => {
 
         it("gets commit messages and diff url if it is PushEvent", async () => {
             const today = new Date('2026-06-20T10:00:00Z');
-
-            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+            const ghPushMapper = new GithubPushEventMapper();
+            const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis',[ghPushMapper,ghCreateRepoMapper ]);
             const activities = await retriever.retrieve(today);
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
@@ -87,8 +91,9 @@ describe("gitHub sourceRetriever implementation test", () => {
 
         it("gets correct payload on metaData pushEvent", async () => {
             const today = new Date('2026-06-20T10:00:00Z');
-
-            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+            const ghPushMapper = new GithubPushEventMapper();
+            const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis',[ghPushMapper,ghCreateRepoMapper ]);
             const activities = await retriever.retrieve(today);
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
@@ -103,8 +108,9 @@ describe("gitHub sourceRetriever implementation test", () => {
 
         it("gets correct payload on metaData createEvent", async () => {
             const today = new Date('2026-06-20T10:00:00Z');
-
-            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+            const ghPushMapper = new GithubPushEventMapper();
+            const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis',[ghPushMapper,ghCreateRepoMapper ]);
             const activities = await retriever.retrieve(today);
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'CreateEvent');
