@@ -11,7 +11,8 @@ export class GithubCreateRepoEventMapper implements EventMapper {
 
         return Activity.create(new Date(event.created_at), {
             source: 'github',
-            type: 'repo_created',
+            type: 'CreateEvent',
+            entityCreated: 'repository',
             repo: event.repo.name,
             description: payload.description ?? ''
         })

@@ -9,7 +9,7 @@ import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEven
 const today = new Date();
 const userName = process.env.GITHUB_USERNAME || 'jorMiquis';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
-const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper]
+const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper];
 const githubRetriever = new GithubSourceRetriever(octokit, userName, mappers);
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY! });
