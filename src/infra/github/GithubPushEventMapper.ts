@@ -9,13 +9,13 @@ export class GithubPushEventMapper implements EventMapper {
     map(event: any): Activity {
         const rawCommits = event.rawCommits.commits;
 
-        const commitMessages = rawCommits.map((commit: { message: string; }) => ({
-            message: commit.message,
+        const commitMessages = rawCommits.map((commit: { commit: { message: any; }; }) => ({
+            message: commit.commit.message,
         }));
 
         return Activity.create(new Date(event.created_at),{
             repo: event.repo,
-            type: 'GithubPushEvent',
+            type: 'PushEvent',
             diff: rawCommits.diff_url,
             commitMessages
         });

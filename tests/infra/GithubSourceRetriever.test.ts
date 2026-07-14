@@ -86,10 +86,10 @@ describe("gitHub sourceRetriever implementation test", () => {
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
 
-            pushEvents.forEach(activity => { expect( activity.metaData.commits).toHaveLength(2) });
+            pushEvents.forEach(activity => { expect( activity.metaData.commitMessages).toHaveLength(2) });
         });
 
-        it("gets correct payload on metaData pushEvent", async () => {
+        it("gets commit messages are not blank", async () => {
             const today = new Date('2026-06-20T10:00:00Z');
             const ghPushMapper = new GithubPushEventMapper();
             const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
@@ -98,10 +98,27 @@ describe("gitHub sourceRetriever implementation test", () => {
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
 
-            pushEvents.forEach(pushEvent => {
-                const metaDataKeys = Object.keys(pushEvent.metaData);
+            pushEvents.forEach(activity => {
+            const metadata = activity.metaData as any
+            metadata.commitMessages.forEach((commit: { message: any; }) => {
+                expect(commit.message).not.toBe('');
+            })
+            })
+        });
 
-                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commits', 'diff', 'type']));
+        it("gets correct payload on metaData PushEvent", async () => {
+            const today = new Date('2026-06-20T10:00:00Z');
+            const ghPushMapper = new GithubPushEventMapper();
+            const ghCreateRepoMapper = new GithubCreateRepoEventMapper();
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis',[ghPushMapper,ghCreateRepoMapper ]);
+            const activities = await retriever.retrieve(today);
+
+            const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
+
+            pushEvents.forEach(PushEvent => {
+                const metaDataKeys = Object.keys(PushEvent.metaData);
+
+                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commitMessages', 'diff', 'type']));
             });
 
         });
@@ -115,8 +132,8 @@ describe("gitHub sourceRetriever implementation test", () => {
 
             const pushEvents = activities.filter(activity => activity.metaData.type === 'CreateEvent');
 
-            pushEvents.forEach(pushEvent => {
-                const metaDataKeys = Object.keys(pushEvent.metaData);
+            pushEvents.forEach(PushEvent => {
+                const metaDataKeys = Object.keys(PushEvent.metaData);
 
                 expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'description', 'type']));
             });
