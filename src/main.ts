@@ -2,7 +2,7 @@ import { Octokit } from "octokit";
 import { GithubSourceRetriever } from "./infra/github/GithubSourceRetriever.js";
 import { NotionSourceRetriever } from "./infra/notion/NotionSourceRetriever.js";
 import { Client } from "@notionhq/client";
-import 'dotenv/config'
+import 'dotenv/config';
 import { GithubPushEventMapper } from "./infra/github/GithubPushEventMapper.js";
 import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEventMapper.js";
 import { NotionEventMapper } from './infra/notion/NotionEventMapper.js';
