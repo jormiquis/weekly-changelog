@@ -15,6 +15,7 @@ export class NotionEventMapper implements EventMapper {
         const title = event.properties.Name.title[0].plain_text;
 
         return Activity.create(new Date(event.last_edited_time),{
+            source: 'notion',
             entry_emoji: event.emoji,
             tags,
             sources,

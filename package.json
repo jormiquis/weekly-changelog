@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@notionhq/client": "^5.22.0",
+    "@resvg/resvg-js": "^2.6.2",
     "dotenv": "^17.4.2",
-    "octokit": "^5.0.5"
+    "octokit": "^5.0.5",
+    "satori": "^0.28.0"
   }
 }

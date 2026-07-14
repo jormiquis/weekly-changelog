@@ -1,4 +1,5 @@
 import { Octokit } from "octokit";
+import { writeFileSync } from "fs";
 import { GithubSourceRetriever } from "./infra/github/GithubSourceRetriever.js";
 import { NotionSourceRetriever } from "./infra/notion/NotionSourceRetriever.js";
 import { Client } from "@notionhq/client";
@@ -6,8 +7,11 @@ import 'dotenv/config';
 import { GithubPushEventMapper } from "./infra/github/GithubPushEventMapper.js";
 import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEventMapper.js";
 import { NotionEventMapper } from './infra/notion/NotionEventMapper.js';
+import { renderCard } from "./ui/card/renderCard.js";
+import { buildCardData } from "./ui/card/toCardData.js";
 
 const today = new Date();
+const weekLabel = `Week of ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 
 const userName = process.env.GITHUB_USERNAME || 'jorMiquis';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
@@ -25,4 +29,8 @@ const [ghActivities, notionActivities] = await Promise.all([
 
 const activities = [...ghActivities, ...notionActivities];
 
-console.log(JSON.stringify(activities, null, 2));
+const cardData = buildCardData(activities, { week: weekLabel });
+const png = await renderCard(cardData);
+
+writeFileSync('docs/card.png', png);
+console.log('Card generated at docs/card.png');
