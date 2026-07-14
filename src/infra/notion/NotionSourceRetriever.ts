@@ -1,4 +1,3 @@
-import { Activity } from "../../domain/Activity.js";
 import type { EventMapper } from "../../domain/EventMapper.js";
 import { SourceRetriever } from "../../domain/SourceRetriever.js";
 import { Client } from '@notionhq/client'
