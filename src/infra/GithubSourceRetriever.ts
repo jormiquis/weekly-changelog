@@ -16,19 +16,19 @@ export class GithubSourceRetriever extends SourceRetriever {
 
       const enriched = await Promise.all(
         response.data.map(async event => {
-          if (event.type !== 'PushEvent') return event
+        const payload = event.payload as any;
 
-          const payload = event.payload as any
-          const [owner = '', repo = ''] = event.repo.name.split('/')
+          if (event.type === 'PushEvent') {
+            const [owner = '', repo = ''] = event.repo.name.split('/');
 
-          const rawCommits = await this.retriever.rest.repos.compareCommits({
-            owner,
-            repo,
-            base: payload.before,
-            head: payload.head
-          });
+            const rawCommits = await this.retriever.rest.repos.compareCommits({
+              owner,
+              repo,
+              base: payload.before,
+              head: payload.head
+            });
 
-          const commits = rawCommits.data.commits.map(commit => ({
+            const commits = rawCommits.data.commits.map(commit => ({
             message: commit.commit.message,
           }));
 
@@ -41,8 +41,20 @@ export class GithubSourceRetriever extends SourceRetriever {
             commits,
             diff
           }
-        })
-      )
+        }
+
+       if (event.type === 'CreateEvent' && payload.ref_type === 'repository') {
+        return {
+          created_at: event.created_at,
+          type: 'CreateEvent',
+          repo: event.repo.name,
+          description: payload.description ?? ''
+        }
+      }
+
+        return null
+      })
+    );
 
   return enriched;
 }

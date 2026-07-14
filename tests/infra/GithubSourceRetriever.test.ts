@@ -19,7 +19,27 @@ describe("gitHub sourceRetriever implementation test", () => {
         repo: { name: 'jormiquis/weekly-changelog' },
         created_at: '2026-05-19T12:00:00Z',
         payload: { before: 'ghi789', head: 'jkl012' }
-    }];
+    },
+    {
+        "id": "14723031000",
+        "type": "CreateEvent",
+        "actor": {
+            "id": 193163902,
+            "login": "jormiquis"
+        },
+        "repo": {
+            "name": "jormiquis/new-project"
+        },
+        "payload": {
+            "ref": null,
+            "ref_type": "repository",
+            "master_branch": "main",
+            "description": "A new side project"
+        },
+        "public": true,
+        "created_at": "2026-06-15T10:00:00Z"
+    }
+];
 
     const mockOctokit = {
     rest: {
@@ -51,7 +71,7 @@ describe("gitHub sourceRetriever implementation test", () => {
         const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
         const activities = await retriever.retrieve(today);
 
-        expect(activities).toHaveLength(1);
+        expect(activities).toHaveLength(2);
     });
 
         it("gets commit messages and diff url if it is PushEvent", async () => {
@@ -60,7 +80,9 @@ describe("gitHub sourceRetriever implementation test", () => {
             const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
             const activities = await retriever.retrieve(today);
 
-            activities.forEach(activity => { expect( activity.metaData.commits).toHaveLength(2) });
+            const pushEvents = activities.filter(activity => activity.metaData.type === 'PushEvent');
+
+            pushEvents.forEach(activity => { expect( activity.metaData.commits).toHaveLength(2) });
         });
 
         it("gets correct payload on metaData pushEvent", async () => {
@@ -75,6 +97,22 @@ describe("gitHub sourceRetriever implementation test", () => {
                 const metaDataKeys = Object.keys(pushEvent.metaData);
 
                 expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'commits', 'diff', 'type']));
+            });
+
+        });
+
+        it("gets correct payload on metaData createEvent", async () => {
+            const today = new Date('2026-06-20T10:00:00Z');
+
+            const retriever = new GithubSourceRetriever(mockOctokit, 'jorMiquis');
+            const activities = await retriever.retrieve(today);
+
+            const pushEvents = activities.filter(activity => activity.metaData.type === 'CreateEvent');
+
+            pushEvents.forEach(pushEvent => {
+                const metaDataKeys = Object.keys(pushEvent.metaData);
+
+                expect(metaDataKeys).toEqual(expect.arrayContaining(['repo', 'description', 'type']));
             });
 
         });
