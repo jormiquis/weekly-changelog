@@ -11,6 +11,8 @@ import { renderCard } from "./ui/card/renderCard.js";
 import { buildCardData } from "./ui/card/toCardData.js";
 import { buildDashboardData } from "./ui/dashboard/toDashboardData.js";
 import { renderDashboard } from "./ui/dashboard/renderDashboard.js";
+import { TelegramCheker } from "./infra/telegram/TelegramChecker.js";
+import type { Checker } from "./domain/Checker.js";
 
 const today = new Date();
 const weekLabel = `Week of ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
@@ -42,3 +44,12 @@ const dashboardHtml = renderDashboard(dashboardData);
 
 writeFileSync('docs/index.html', dashboardHtml);
 console.log('Dashboard generated at docs/index.html');
+
+const dashboardUrl = process.env.DASHBOARD_URL || `https://${userName.toLowerCase()}.github.io/weekly-changelog/`;
+
+const checker: Checker = new TelegramCheker(
+  process.env.TELEGRAM_BOT_TOKEN!,
+  process.env.TELEGRAM_CHAT_ID!
+)
+
+await checker.sendForApproval('docs/card.png', `Weekly Changelog - ${weekLabel}\n\n${dashboardUrl}\n\n¿Publicar?`)
