@@ -12,7 +12,7 @@ export interface CardTheme {
 
 export const defaultTheme: CardTheme = {
   width: 1200,
-  height: 630,
+  height: 760,
   fontFamily: 'Poppins',
   background: 'linear-gradient(160deg, #0d0d0d 0%, #1a1a19 100%)',
   cardBg: 'rgba(255, 255, 255, 0.04)',

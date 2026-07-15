@@ -25,7 +25,7 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const MAX_REPOS_SHOWN = 3
+const MAX_REPOS_SHOWN = 4
 const MAX_NOTES_SHOWN = 2
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -43,14 +43,14 @@ function statItem(theme: CardTheme, value: string | number, label: string) {
     props: {
       style: { display: 'flex', flexDirection: 'column' },
       children: [
-        { type: 'div', props: { style: { fontSize: '30px', fontWeight: 700, color: theme.textPrimary }, children: String(value) } },
-        { type: 'div', props: { style: { fontSize: '15px', color: theme.textMuted, marginTop: '2px' }, children: label } }
+        { type: 'div', props: { style: { fontSize: '34px', fontWeight: 700, color: theme.textPrimary }, children: String(value) } },
+        { type: 'div', props: { style: { fontSize: '16px', color: theme.textMuted, marginTop: '2px' }, children: label } }
       ]
     }
   }
 }
 
-function repoRow(theme: CardTheme, accent: string, name: string, commits: number) {
+function repoChip(theme: CardTheme, accent: string, name: string, commits: number) {
   return {
     type: 'div',
     props: {
@@ -58,14 +58,14 @@ function repoRow(theme: CardTheme, accent: string, name: string, commits: number
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 16px',
-        borderRadius: '12px',
-        backgroundColor: hexToRgba(accent, 0.1),
+        gap: '10px',
+        padding: '12px 18px',
+        borderRadius: '999px',
+        backgroundColor: hexToRgba(accent, 0.12),
       },
       children: [
-        { type: 'div', props: { style: { fontSize: '16px', fontWeight: 500, color: theme.textPrimary }, children: name } },
-        { type: 'div', props: { style: { fontSize: '15px', fontWeight: 600, color: accent }, children: `${commits} commit${commits === 1 ? '' : 's'}` } }
+        { type: 'div', props: { style: { fontSize: '17px', fontWeight: 500, color: theme.textPrimary }, children: name } },
+        { type: 'div', props: { style: { fontSize: '16px', fontWeight: 600, color: accent }, children: `${commits} commit${commits === 1 ? '' : 's'}` } }
       ]
     }
   }
@@ -75,7 +75,7 @@ function moreIndicator(theme: CardTheme, count: number, label: string) {
   return {
     type: 'div',
     props: {
-      style: { display: 'flex', fontSize: '14px', fontWeight: 500, color: theme.textMuted, padding: '2px 4px' },
+      style: { display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 500, color: theme.textMuted, padding: '12px 6px' },
       children: `+${count} more ${label}${count === 1 ? '' : 's'}`
     }
   }
@@ -84,7 +84,7 @@ function moreIndicator(theme: CardTheme, count: number, label: string) {
 function tagPill(accent: string, text: string, size: 'md' | 'sm' = 'md') {
   const sizes = {
     md: { fontSize: '16px', padding: '8px 18px' },
-    sm: { fontSize: '13px', padding: '5px 14px' },
+    sm: { fontSize: '14px', padding: '6px 16px' },
   }
   return {
     type: 'div',
@@ -109,9 +109,9 @@ function noteRow(theme: CardTheme, accent: string, note: { emoji: string; title:
       style: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        padding: '12px 16px',
-        borderRadius: '12px',
+        gap: '10px',
+        padding: '14px 18px',
+        borderRadius: '14px',
         backgroundColor: hexToRgba(accent, 0.1),
       },
       children: [
@@ -121,7 +121,7 @@ function noteRow(theme: CardTheme, accent: string, note: { emoji: string; title:
             style: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' },
             children: [
               { type: 'div', props: { style: { display: 'flex', fontSize: '20px' }, children: note.emoji } },
-              { type: 'div', props: { style: { fontSize: '16px', fontWeight: 500, color: theme.textPrimary }, children: note.title } }
+              { type: 'div', props: { style: { fontSize: '17px', fontWeight: 500, color: theme.textPrimary }, children: note.title } }
             ]
           }
         },
@@ -137,51 +137,70 @@ function noteRow(theme: CardTheme, accent: string, note: { emoji: string; title:
   }
 }
 
-function sectionCard(theme: CardTheme, section: CardSection) {
+function sectionBar(theme: CardTheme, section: CardSection) {
   return {
     type: 'div',
     props: {
       style: {
         display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: '32px',
+        width: '100%',
         overflow: 'hidden',
         backgroundColor: theme.cardBg,
         border: `1px solid ${theme.cardBorder}`,
-        borderRadius: '24px',
-        padding: '32px',
+        borderLeft: `4px solid ${section.accent}`,
+        borderRadius: '20px',
+        padding: '28px 32px',
       },
       children: [
-        { type: 'div', props: { style: { fontSize: '26px', fontWeight: 600, color: theme.textPrimary }, children: section.title } },
-        { type: 'div', props: { style: { fontSize: '16px', color: theme.textMuted, marginTop: '4px' }, children: section.subtitle } },
-        section.repos && {
+        {
           type: 'div',
           props: {
-            style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' },
+            style: { display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0 },
             children: [
-              ...section.repos.slice(0, MAX_REPOS_SHOWN).map(repo => repoRow(theme, section.accent, repo.name, repo.commits)),
-              section.repos.length > MAX_REPOS_SHOWN && moreIndicator(theme, section.repos.length - MAX_REPOS_SHOWN, 'repo')
-            ].filter(Boolean)
+              { type: 'div', props: { style: { fontSize: '25px', fontWeight: 600, color: theme.textPrimary }, children: section.title } },
+              { type: 'div', props: { style: { fontSize: '16px', color: theme.textMuted, marginTop: '4px' }, children: section.subtitle } }
+            ]
           }
         },
-        section.stats && {
+        {
           type: 'div',
           props: {
-            style: { display: 'flex', flexDirection: 'row', gap: '32px', marginTop: 'auto' },
-            children: section.stats.map(stat => statItem(theme, stat.value, stat.label))
-          }
-        },
-        section.notes && {
-          type: 'div',
-          props: {
-            style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' },
+            style: { display: 'flex', flex: 1, minWidth: 0 },
             children: [
-              ...section.notes.slice(0, MAX_NOTES_SHOWN).map(note => noteRow(theme, section.accent, note)),
-              section.notes.length > MAX_NOTES_SHOWN && moreIndicator(theme, section.notes.length - MAX_NOTES_SHOWN, 'note')
+              section.repos && {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px' },
+                  children: [
+                    ...section.repos.slice(0, MAX_REPOS_SHOWN).map(repo => repoChip(theme, section.accent, repo.name, repo.commits)),
+                    section.repos.length > MAX_REPOS_SHOWN && moreIndicator(theme, section.repos.length - MAX_REPOS_SHOWN, 'repo')
+                  ].filter(Boolean)
+                }
+              },
+              section.stats && {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', flexDirection: 'row', gap: '40px' },
+                  children: section.stats.map(stat => statItem(theme, stat.value, stat.label))
+                }
+              },
+              section.notes && {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' },
+                  children: [
+                    ...section.notes.slice(0, MAX_NOTES_SHOWN).map(note => noteRow(theme, section.accent, note)),
+                    section.notes.length > MAX_NOTES_SHOWN && moreIndicator(theme, section.notes.length - MAX_NOTES_SHOWN, 'note')
+                  ].filter(Boolean)
+                }
+              }
             ].filter(Boolean)
           }
         }
-      ].filter(Boolean)
+      ]
     }
   }
 }
@@ -249,8 +268,8 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
                 {
                   type: 'div',
                   props: {
-                    style: { display: 'flex', flexDirection: 'row', gap: '28px', flex: 1, marginTop: '44px', flexWrap: 'wrap' },
-                    children: data.sections.map(section => sectionCard(theme, section))
+                    style: { display: 'flex', flexDirection: 'column', gap: '22px', flex: 1, marginTop: '40px', justifyContent: 'flex-start' },
+                    children: data.sections.map(section => sectionBar(theme, section))
                   }
                 }
               ]
