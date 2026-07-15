@@ -35,10 +35,10 @@ import type { Checker } from '../../domain/Checker.js';
 
       const lastMessage = data.result?.[0]?.message
       if (lastMessage?.chat?.id === Number(this.chatId)) {
-        const text = lastMessage.text?.trim()
+        const text = lastMessage.text?.trim().toLowerCase()
 
-        if (text.toLowerCase() === 'yes') return true;
-        if (text.toLowerCase() === 'no') return false;
+        if (text === 'yes') return true;
+        if (text === 'no') return false;
       }
 
       await new Promise(resolve => setTimeout(resolve, 5000))

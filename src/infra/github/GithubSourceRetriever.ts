@@ -19,7 +19,9 @@ export class GithubSourceRetriever extends SourceRetriever {
         response.data.map(async event => {
         const payload = event.payload as any;
 
-          if (event.type === 'PushEvent') {
+          // Only enrich public push events: skips wasted compareCommits calls on
+          // events that the mappers will discard, and never fetches private-repo diffs.
+          if (event.public === true && event.type === 'PushEvent') {
             const [owner = '', repo = ''] = event.repo.name.split('/');
 
             const rawCommits = await this.retriever.rest.repos.compareCommits({

@@ -9,6 +9,7 @@ describe("gitHub sourceRetriever implementation test", () => {
     const ghEvents = [{
         id: '123',
         type: 'PushEvent',
+        public: true,
         actor: { login: 'jormiquis' },
         repo: { name: 'jormiquis/weekly-changelog' },
         created_at: '2026-06-19T12:00:00Z',
@@ -17,6 +18,7 @@ describe("gitHub sourceRetriever implementation test", () => {
     {
         id: '234',
         type: 'PushEvent',
+        public: true,
         actor: { login: 'jormiquis' },
         repo: { name: 'jormiquis/weekly-changelog' },
         created_at: '2026-05-19T12:00:00Z',
@@ -75,6 +77,32 @@ describe("gitHub sourceRetriever implementation test", () => {
         const activities = await retriever.retrieve(today);
 
         expect(activities).toHaveLength(2);
+    });
+
+    it("ignores private-repo events so they never reach the public dashboard", async () => {
+        const privateOctokit = {
+            rest: {
+                activity: {
+                    listEventsForAuthenticatedUser: vi.fn().mockResolvedValue({
+                        data: [{
+                            id: '999',
+                            type: 'PushEvent',
+                            public: false,
+                            actor: { login: 'jormiquis' },
+                            repo: { name: 'jormiquis/secret-repo' },
+                            created_at: '2026-06-19T12:00:00Z',
+                            payload: { before: 'aaa', head: 'bbb' }
+                        }]
+                    })
+                },
+                repos: { compareCommits: vi.fn() }
+            }
+        } as unknown as Octokit;
+
+        const retriever = new GithubSourceRetriever(privateOctokit, 'jormiquis', [new GithubPushEventMapper(), new GithubCreateRepoEventMapper()]);
+        const activities = await retriever.retrieve(new Date('2026-06-20T10:00:00Z'));
+
+        expect(activities).toHaveLength(0);
     });
 
         it("gets commit messages and diff url if it is PushEvent", async () => {

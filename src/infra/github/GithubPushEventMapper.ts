@@ -4,7 +4,8 @@ import type { EventMapper } from '../../domain/EventMapper.js';
 export class GithubPushEventMapper implements EventMapper {
     canHandle(event: any): boolean {
         const [owner = '', repo = ''] = event.repo.name.split('/');
-        return event.type === 'PushEvent' && owner === event.actor?.login;
+
+        return event.public === true && event.type === 'PushEvent' && owner === event.actor?.login;
     }
 
     map(event: any): Activity {

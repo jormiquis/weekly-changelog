@@ -3,7 +3,8 @@ import type { EventMapper } from '../../domain/EventMapper.js'
 
 export class GithubCreateRepoEventMapper implements EventMapper {
     canHandle(event: any): boolean {
-        return event.type === 'CreateEvent' && event.payload.ref_type === 'repository'
+
+        return event.public === true && event.type === 'CreateEvent' && event.payload.ref_type === 'repository'
     }
 
     map(event: any): Activity {
