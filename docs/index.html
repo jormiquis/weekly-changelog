@@ -26,6 +26,8 @@
       --accent-green-bg: rgba(0, 131, 0, 0.10);
       --accent-magenta: #c2427a;
       --accent-magenta-bg: rgba(232, 123, 164, 0.16);
+      --accent-yellow: #eda100;
+      --accent-yellow-bg: rgba(237, 161, 0, 0.14);
 
       --tag-bg: rgba(11, 11, 11, 0.05);
     }
@@ -47,6 +49,8 @@
         --accent-green-bg: rgba(47, 174, 47, 0.16);
         --accent-magenta: #d55181;
         --accent-magenta-bg: rgba(213, 81, 129, 0.18);
+        --accent-yellow: #c98500;
+        --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
         --tag-bg: rgba(255, 255, 255, 0.06);
       }
@@ -68,6 +72,8 @@
       --accent-green-bg: rgba(47, 174, 47, 0.16);
       --accent-magenta: #d55181;
       --accent-magenta-bg: rgba(213, 81, 129, 0.18);
+      --accent-yellow: #c98500;
+      --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
       --tag-bg: rgba(255, 255, 255, 0.06);
     }
@@ -108,6 +114,20 @@
     .accent-blue { --accent: var(--accent-blue); --accent-bg: var(--accent-blue-bg); }
     .accent-green { --accent: var(--accent-green); --accent-bg: var(--accent-green-bg); }
     .accent-magenta { --accent: var(--accent-magenta); --accent-bg: var(--accent-magenta-bg); }
+    .accent-yellow { --accent: var(--accent-yellow); --accent-bg: var(--accent-yellow-bg); }
+
+    .digest-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+    }
+    .digest-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+    .digest-headline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; color: var(--text-primary); margin: 0 0 10px; }
+    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 14px; }
+    .digest-hero .tags { margin-bottom: 0; }
 
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .entry-title { font-size: 16px; font-weight: 600; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 8px; word-break: break-word; }
@@ -115,6 +135,9 @@
     .emoji { font-size: 17px; }
 
     .pill { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+
+    .repo-evaluation { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); background: var(--tag-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+    .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
 
     .commits { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 5px; }
     .commits li { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); word-break: break-word; }
@@ -151,18 +174,26 @@
       <span class="week-pill">Week of Jul 15</span>
     </header>
     
+    <section class="digest-hero accent-yellow">
+      <p class="digest-eyebrow">This week</p>
+      <h2 class="digest-headline">Dashboard and component updates in weekly engineering activity</h2>
+      <p class="digest-summary">Dashboard creation and component restyling were primary focuses. GitHub and Notion integration flows were unified.</p>
+      <div class="tags"><span class="tag">Dashboard creation completed</span><span class="tag">Visual component restyling implemented</span><span class="tag">GitHub and Notion flow unification</span><span class="tag">Font distribution via build script updated</span></div>
+    </section>
+    
     <section class="dashboard-section">
       <h2>Commits</h2>
       <div class="entry-grid">
       <article class="entry-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
-          <span class="pill">18 commits</span>
+          <span class="pill">20 commits</span>
         </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Integration of GitHub and Notion event flows with unified processing in main.ts.</p>
         <ul class="commits">
-          <li>feat: re-styles visual components</li><li>feat: created dashboard</li><li>feat: created dashboard</li><li>feat: added index html</li><li>chore: disable Jekyll for GitHub Pages</li><li>feat: added card component</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li><li>added commits management on gh push event</li>
+          <li>feat: update build script to copy fonts to distribution</li><li>feat: made card larger for better readabily</li><li>feat: re-styles visual components</li><li>feat: created dashboard</li><li>feat: created dashboard</li><li>feat: added index html</li><li>chore: disable Jekyll for GitHub Pages</li><li>feat: added card component</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li><li>added commits management on gh push event</li>
         </ul>
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...94f32322f8865e7d67706c095907274d3ad201aa.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...445cbdab4713a05194d375d7fcfefb661eec3fc3.diff" target="_blank" rel="noopener">View diff &rarr;</a>
       </article></div>
     </section>
     
@@ -174,14 +205,13 @@
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>Brag document, work diary for software engineers</span>
         </header>
-        <div class="tags"><span class="tag">Documentation</span><span class="tag">good-practices</span></div>
         <div class="sources"><a href="https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/" target="_blank" rel="noopener">https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/</a><a href="https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com" target="_blank" rel="noopener">https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com</a></div>
       </article></div>
     </section>
     
   </div>
   <footer>
-    Generated Jul 15, 6:54 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Jul 15, 6:56 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
 </body>
 </html>

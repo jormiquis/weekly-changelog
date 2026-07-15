@@ -4,6 +4,7 @@ export interface DashboardRepo {
   totalCommits: number
   diffUrl: string
   commits: string[]
+  evaluation?: string
 }
 
 export interface DashboardCreatedRepo {
@@ -15,8 +16,13 @@ export interface DashboardCreatedRepo {
 export interface DashboardNote {
   emoji: string
   title: string
-  tags: string[]
   sources: string[]
+}
+
+export interface DashboardDigest {
+  headline: string
+  summary: string
+  highlights: string[]
 }
 
 export interface DashboardData {
@@ -25,4 +31,5 @@ export interface DashboardData {
   repos: DashboardRepo[]
   createdRepos: DashboardCreatedRepo[]
   notes: DashboardNote[]
+  digest?: DashboardDigest
 }

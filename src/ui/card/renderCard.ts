@@ -3,7 +3,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import type { CardData, CardSection } from './CardData.js';
+import type { CardData, CardHighlight } from './CardData.js';
 import { type CardTheme, defaultTheme } from './CardTheme.js';
 
 const fontsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'fonts')
@@ -25,8 +25,7 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const MAX_REPOS_SHOWN = 4
-const MAX_NOTES_SHOWN = 2
+const MAX_HIGHLIGHTS_SHOWN = 10
 
 function hexToRgba(hex: string, alpha: number): string {
   const clean = hex.replace('#', '')
@@ -37,20 +36,12 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-function statItem(theme: CardTheme, value: string | number, label: string) {
-  return {
-    type: 'div',
-    props: {
-      style: { display: 'flex', flexDirection: 'column' },
-      children: [
-        { type: 'div', props: { style: { fontSize: '34px', fontWeight: 700, color: theme.textPrimary }, children: String(value) } },
-        { type: 'div', props: { style: { fontSize: '16px', color: theme.textMuted, marginTop: '2px' }, children: label } }
-      ]
-    }
-  }
+interface SatoriNode {
+  type: string
+  props: { style: Record<string, unknown>; children: unknown }
 }
 
-function repoChip(theme: CardTheme, accent: string, name: string, commits: number) {
+function highlightChip(theme: CardTheme, highlight: CardHighlight, large: boolean): SatoriNode {
   return {
     type: 'div',
     props: {
@@ -58,146 +49,85 @@ function repoChip(theme: CardTheme, accent: string, name: string, commits: numbe
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: '10px',
-        padding: '12px 18px',
-        borderRadius: '999px',
-        backgroundColor: hexToRgba(accent, 0.12),
+        gap: large ? '16px' : '12px',
+        maxWidth: large ? '520px' : '420px',
+        backgroundColor: hexToRgba(highlight.accent, 0.12),
+        border: `1px solid ${theme.cardBorder}`,
+        borderLeft: `4px solid ${highlight.accent}`,
+        borderRadius: '16px',
+        padding: large ? '22px 30px' : '16px 22px',
       },
       children: [
-        { type: 'div', props: { style: { fontSize: '17px', fontWeight: 500, color: theme.textPrimary }, children: name } },
-        { type: 'div', props: { style: { fontSize: '16px', fontWeight: 600, color: accent }, children: `${commits} commit${commits === 1 ? '' : 's'}` } }
+        { type: 'div', props: { style: { display: 'flex', fontSize: large ? '36px' : '28px' }, children: highlight.emoji } },
+        { type: 'div', props: { style: { display: 'flex', fontSize: large ? '22px' : '19px', fontWeight: 600, color: theme.textPrimary, lineHeight: 1.35 }, children: highlight.text } }
       ]
     }
   }
 }
 
-function moreIndicator(theme: CardTheme, count: number, label: string) {
-  return {
-    type: 'div',
-    props: {
-      style: { display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 500, color: theme.textMuted, padding: '12px 6px' },
-      children: `+${count} more ${label}${count === 1 ? '' : 's'}`
-    }
-  }
-}
-
-function tagPill(accent: string, text: string, size: 'md' | 'sm' = 'md') {
-  const sizes = {
-    md: { fontSize: '16px', padding: '8px 18px' },
-    sm: { fontSize: '14px', padding: '6px 16px' },
-  }
+function moreChip(theme: CardTheme, count: number, large: boolean): SatoriNode {
   return {
     type: 'div',
     props: {
       style: {
         display: 'flex',
-        backgroundColor: hexToRgba(accent, 0.16),
-        color: accent,
-        fontWeight: 500,
-        borderRadius: '999px',
-        ...sizes[size],
+        alignItems: 'center',
+        backgroundColor: theme.cardBg,
+        border: `1px dashed ${theme.cardBorder}`,
+        borderRadius: '16px',
+        padding: large ? '22px 30px' : '16px 22px',
       },
-      children: text
+      children: [
+        { type: 'div', props: { style: { fontSize: large ? '20px' : '18px', fontWeight: 600, color: theme.textMuted }, children: `+${count} more` } }
+      ]
     }
   }
 }
 
-function noteRow(theme: CardTheme, accent: string, note: { emoji: string; title: string; tags: string[] }) {
+function emptyState(theme: CardTheme) {
   return {
     type: 'div',
     props: {
       style: {
         display: 'flex',
+        flex: 1,
         flexDirection: 'column',
-        gap: '10px',
-        padding: '14px 18px',
-        borderRadius: '14px',
-        backgroundColor: hexToRgba(accent, 0.1),
-      },
-      children: [
-        {
-          type: 'div',
-          props: {
-            style: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' },
-            children: [
-              { type: 'div', props: { style: { display: 'flex', fontSize: '20px' }, children: note.emoji } },
-              { type: 'div', props: { style: { fontSize: '17px', fontWeight: 500, color: theme.textPrimary }, children: note.title } }
-            ]
-          }
-        },
-        note.tags.length > 0 && {
-          type: 'div',
-          props: {
-            style: { display: 'flex', flexDirection: 'row', gap: '8px', flexWrap: 'wrap' },
-            children: note.tags.map(tag => tagPill(accent, tag, 'sm'))
-          }
-        }
-      ].filter(Boolean)
-    }
-  }
-}
-
-function sectionBar(theme: CardTheme, section: CardSection) {
-  return {
-    type: 'div',
-    props: {
-      style: {
-        display: 'flex',
-        flexDirection: 'row',
         alignItems: 'center',
-        gap: '32px',
-        width: '100%',
-        overflow: 'hidden',
+        justifyContent: 'center',
         backgroundColor: theme.cardBg,
         border: `1px solid ${theme.cardBorder}`,
-        borderLeft: `4px solid ${section.accent}`,
-        borderRadius: '20px',
-        padding: '28px 32px',
+        borderRadius: '24px',
       },
+      children: [
+        { type: 'div', props: { style: { display: 'flex', fontSize: '42px' }, children: '🌙' } },
+        { type: 'div', props: { style: { display: 'flex', fontSize: '20px', color: theme.textMuted, marginTop: '14px' }, children: 'No activity recorded this week' } }
+      ]
+    }
+  }
+}
+
+function highlightsGrid(theme: CardTheme, highlights: CardHighlight[]) {
+  if (highlights.length === 0) return emptyState(theme)
+
+  const hasOverflow = highlights.length > MAX_HIGHLIGHTS_SHOWN
+  const shownCount = hasOverflow ? MAX_HIGHLIGHTS_SHOWN - 1 : highlights.length
+  const shown = highlights.slice(0, shownCount)
+  const overflow = highlights.length - shownCount
+  const large = shownCount + (overflow > 0 ? 1 : 0) <= 4
+
+  const chips: SatoriNode[] = shown.map(highlight => highlightChip(theme, highlight, large))
+  if (overflow > 0) chips.push(moreChip(theme, overflow, large))
+
+  return {
+    type: 'div',
+    props: {
+      style: { display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' },
       children: [
         {
           type: 'div',
           props: {
-            style: { display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0 },
-            children: [
-              { type: 'div', props: { style: { fontSize: '25px', fontWeight: 600, color: theme.textPrimary }, children: section.title } },
-              { type: 'div', props: { style: { fontSize: '16px', color: theme.textMuted, marginTop: '4px' }, children: section.subtitle } }
-            ]
-          }
-        },
-        {
-          type: 'div',
-          props: {
-            style: { display: 'flex', flex: 1, minWidth: 0 },
-            children: [
-              section.repos && {
-                type: 'div',
-                props: {
-                  style: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px' },
-                  children: [
-                    ...section.repos.slice(0, MAX_REPOS_SHOWN).map(repo => repoChip(theme, section.accent, repo.name, repo.commits)),
-                    section.repos.length > MAX_REPOS_SHOWN && moreIndicator(theme, section.repos.length - MAX_REPOS_SHOWN, 'repo')
-                  ].filter(Boolean)
-                }
-              },
-              section.stats && {
-                type: 'div',
-                props: {
-                  style: { display: 'flex', flexDirection: 'row', gap: '40px' },
-                  children: section.stats.map(stat => statItem(theme, stat.value, stat.label))
-                }
-              },
-              section.notes && {
-                type: 'div',
-                props: {
-                  style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' },
-                  children: [
-                    ...section.notes.slice(0, MAX_NOTES_SHOWN).map(note => noteRow(theme, section.accent, note)),
-                    section.notes.length > MAX_NOTES_SHOWN && moreIndicator(theme, section.notes.length - MAX_NOTES_SHOWN, 'note')
-                  ].filter(Boolean)
-                }
-              }
-            ].filter(Boolean)
+            style: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '18px' },
+            children: chips
           }
         }
       ]
@@ -268,8 +198,8 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
                 {
                   type: 'div',
                   props: {
-                    style: { display: 'flex', flexDirection: 'column', gap: '22px', flex: 1, marginTop: '40px', justifyContent: 'flex-start' },
-                    children: data.sections.map(section => sectionBar(theme, section))
+                    style: { display: 'flex', flexDirection: 'column', flex: 1, marginTop: '40px' },
+                    children: [highlightsGrid(theme, data.highlights)]
                   }
                 }
               ]

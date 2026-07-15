@@ -1,5 +1,6 @@
 import type { Activity } from '../../domain/Activity.js';
 import { isPushEvent, isCreateRepoEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
+import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { DashboardCreatedRepo, DashboardData, DashboardNote, DashboardRepo } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
@@ -31,6 +32,7 @@ interface PendingPush {
 
 export interface BuildDashboardDataOptions {
   week: string
+  digest?: SynthesizedDigest
 }
 
 export function buildDashboardData(activities: Activity[], options: BuildDashboardDataOptions): DashboardData {
@@ -50,14 +52,22 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     });
   }
 
+  const evaluationByRepo = new Map((options.digest?.commitEvaluations ?? []).map(({ repo, evaluation }) => [repo, evaluation]));
+
   const repos: DashboardRepo[] = [...repoPushes.entries()]
-    .map(([fullName, { url, pushes }]) => ({
-      name: repoShortName(fullName),
-      url,
-      totalCommits: pushes.reduce((sum, push) => sum + push.commits.length, 0),
-      diffUrl: combinedDiffUrl(fullName, pushes),
-      commits: pushes.flatMap(push => push.commits)
-    }))
+    .map(([fullName, { url, pushes }]) => {
+      const name = repoShortName(fullName);
+      const evaluation = evaluationByRepo.get(name);
+
+      return {
+        name,
+        url,
+        totalCommits: pushes.reduce((sum, push) => sum + push.commits.length, 0),
+        diffUrl: combinedDiffUrl(fullName, pushes),
+        commits: pushes.flatMap(push => push.commits),
+        ...(evaluation ? { evaluation } : {})
+      }
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const createdRepos: DashboardCreatedRepo[] = activities
@@ -75,7 +85,6 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     .map(meta => ({
       emoji: meta.entry_emoji || '📝',
       title: meta.title,
-      tags: meta.tags,
       sources: meta.sources
     }));
 
@@ -84,6 +93,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     generatedAt: formatGeneratedAt(new Date()),
     repos,
     createdRepos,
-    notes
+    notes,
+    ...(options.digest ? { digest: options.digest } : {})
   }
 }

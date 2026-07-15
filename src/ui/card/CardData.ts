@@ -1,32 +1,13 @@
-export interface CardStat {
-  value: string | number
-  label: string
-}
-
-export interface CardRepoStat {
-  name: string
-  commits: number
-}
-
-export interface CardNote {
+export interface CardHighlight {
   emoji: string
-  title: string
-  tags: string[]
-}
-
-export interface CardSection {
-  /** Hex accent color, e.g. "#2dd4bf". Badge/tag backgrounds are derived from it. */
+  text: string
+  /** Hex accent color, e.g. "#2dd4bf". Differentiates the event type. */
   accent: string
-  title: string
-  subtitle: string
-  stats?: CardStat[]
-  repos?: CardRepoStat[]
-  notes?: CardNote[]
 }
 
 export interface CardData {
   week: string
-  sections: CardSection[]
+  highlights: CardHighlight[]
   title?: string
   subtitle?: string
 }

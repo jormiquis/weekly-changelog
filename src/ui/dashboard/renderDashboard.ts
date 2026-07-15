@@ -18,6 +18,18 @@ function tagsMarkup(tags: string[]): string {
   return `<div class="tags">${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>`
 }
 
+function digestSection(digest: DashboardData['digest']): string {
+  if (!digest) return ''
+
+  return `
+    <section class="digest-hero accent-yellow">
+      <p class="digest-eyebrow">This week</p>
+      <h2 class="digest-headline">${escapeHtml(digest.headline)}</h2>
+      <p class="digest-summary">${escapeHtml(digest.summary)}</p>
+      ${tagsMarkup(digest.highlights)}
+    </section>`
+}
+
 function repoSection(repos: DashboardData['repos']): string {
   if (repos.length === 0) return ''
 
@@ -27,6 +39,7 @@ function repoSection(repos: DashboardData['repos']): string {
           <a class="entry-title" href="${escapeHtml(repo.url)}" target="_blank" rel="noopener">${escapeHtml(repo.name)}</a>
           <span class="pill">${repo.totalCommits} commit${repo.totalCommits === 1 ? '' : 's'}</span>
         </header>
+        ${repo.evaluation ? `<p class="repo-evaluation"><span class="ai-badge">AI</span>${escapeHtml(repo.evaluation)}</p>` : ''}
         <ul class="commits">
           ${repo.commits.map(commit => `<li>${escapeHtml(commit)}</li>`).join('')}
         </ul>
@@ -72,7 +85,6 @@ function notesSection(notes: DashboardData['notes']): string {
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">${escapeHtml(note.emoji)}</span>${escapeHtml(note.title)}</span>
         </header>
-        ${tagsMarkup(note.tags)}
         ${sources ? `<div class="sources">${sources}</div>` : ''}
       </article>`
   }).join('')
@@ -115,6 +127,8 @@ export function renderDashboard(data: DashboardData): string {
       --accent-green-bg: rgba(0, 131, 0, 0.10);
       --accent-magenta: #c2427a;
       --accent-magenta-bg: rgba(232, 123, 164, 0.16);
+      --accent-yellow: #eda100;
+      --accent-yellow-bg: rgba(237, 161, 0, 0.14);
 
       --tag-bg: rgba(11, 11, 11, 0.05);
     }
@@ -136,6 +150,8 @@ export function renderDashboard(data: DashboardData): string {
         --accent-green-bg: rgba(47, 174, 47, 0.16);
         --accent-magenta: #d55181;
         --accent-magenta-bg: rgba(213, 81, 129, 0.18);
+        --accent-yellow: #c98500;
+        --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
         --tag-bg: rgba(255, 255, 255, 0.06);
       }
@@ -157,6 +173,8 @@ export function renderDashboard(data: DashboardData): string {
       --accent-green-bg: rgba(47, 174, 47, 0.16);
       --accent-magenta: #d55181;
       --accent-magenta-bg: rgba(213, 81, 129, 0.18);
+      --accent-yellow: #c98500;
+      --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
       --tag-bg: rgba(255, 255, 255, 0.06);
     }
@@ -197,6 +215,20 @@ export function renderDashboard(data: DashboardData): string {
     .accent-blue { --accent: var(--accent-blue); --accent-bg: var(--accent-blue-bg); }
     .accent-green { --accent: var(--accent-green); --accent-bg: var(--accent-green-bg); }
     .accent-magenta { --accent: var(--accent-magenta); --accent-bg: var(--accent-magenta-bg); }
+    .accent-yellow { --accent: var(--accent-yellow); --accent-bg: var(--accent-yellow-bg); }
+
+    .digest-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+    }
+    .digest-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+    .digest-headline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; color: var(--text-primary); margin: 0 0 10px; }
+    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 14px; }
+    .digest-hero .tags { margin-bottom: 0; }
 
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .entry-title { font-size: 16px; font-weight: 600; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 8px; word-break: break-word; }
@@ -204,6 +236,9 @@ export function renderDashboard(data: DashboardData): string {
     .emoji { font-size: 17px; }
 
     .pill { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+
+    .repo-evaluation { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); background: var(--tag-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+    .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
 
     .commits { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 5px; }
     .commits li { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); word-break: break-word; }
@@ -239,6 +274,7 @@ export function renderDashboard(data: DashboardData): string {
       <h1>Weekly Changelog</h1>
       <span class="week-pill">${escapeHtml(data.week)}</span>
     </header>
+    ${digestSection(data.digest)}
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
     ${notesSection(data.notes)}
