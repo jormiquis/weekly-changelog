@@ -17,7 +17,7 @@ import type { Checker } from "./domain/Checker.js";
 const today = new Date();
 const weekLabel = `Week of ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 
-const userName = process.env.GITHUB_USERNAME || 'jorMiquis';
+const userName = process.env.GITHUB_USERNAME || '';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
 const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper];
 const githubRetriever = new GithubSourceRetriever(octokit, userName, mappers);
@@ -50,6 +50,18 @@ const dashboardUrl = process.env.DASHBOARD_URL || `https://${userName.toLowerCas
 const checker: Checker = new TelegramCheker(
   process.env.TELEGRAM_BOT_TOKEN!,
   process.env.TELEGRAM_CHAT_ID!
-)
+);
+
+const approved = await checker.sendForApproval(
+  'docs/card.png',
+  `Weekly Changelog - ${weekLabel}`
+);
+
+if (approved) {
+  console.log('approved ✅ — publishing...');
+
+} else {
+  console.log('rejected ❌ — not published');
+}
 
 await checker.sendForApproval('docs/card.png', `Weekly Changelog - ${weekLabel}\n\n${dashboardUrl}\n\n¿Publicar?`)

@@ -7,12 +7,13 @@ import type { Checker } from '../../domain/Checker.js';
   ) {}
 
   async sendForApproval(imagePath: string, caption: string): Promise<boolean> {
-    const form = new FormData()
-    const fs = await import('fs')
-    const imageBuffer = fs.readFileSync(imagePath)
-    form.append('chat_id', this.chatId)
-    form.append('photo', new Blob([imageBuffer]), 'card.png')
-    form.append('caption', caption + '\n\nResponde ✅ para publicar o ❌ para rechazar')
+    const form = new FormData();
+    const fs = await import('fs');
+    const imageBuffer = fs.readFileSync(imagePath);
+
+    form.append('chat_id', this.chatId);
+    form.append('photo', new Blob([imageBuffer]), 'card.png');
+    form.append('caption', caption + '\n\nAnswer YES to publish o NOPE to reject');
 
     await fetch(`https://api.telegram.org/bot${this.botToken}/sendPhoto`, {
       method: 'POST',
@@ -35,14 +36,16 @@ import type { Checker } from '../../domain/Checker.js';
       const lastMessage = data.result?.[0]?.message
       if (lastMessage?.chat?.id === Number(this.chatId)) {
         const text = lastMessage.text?.trim()
-        if (text === 'yes') return true;
-        if (text === 'no') return false;
+
+        if (text.toLowerCase() === 'yes') return true;
+        if (text.toLowerCase() === 'no') return false;
       }
 
       await new Promise(resolve => setTimeout(resolve, 5000))
     }
 
-    console.log('Timeout: no se recibió respuesta')
+    console.log('TimeOut: no response');
+
     return false
   }
 }
