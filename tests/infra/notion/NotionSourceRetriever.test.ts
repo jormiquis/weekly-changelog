@@ -90,7 +90,7 @@ describe('NotionSourceRetriever', () => {
               activities.forEach(activity => {
                   const metaDataKeys = Object.keys(activity.metaData);
 
-                  expect(metaDataKeys).toEqual(['entry_emoji', 'tags', 'sources', 'title']);
+                  expect(metaDataKeys).toEqual(['source', 'entry_emoji', 'tags', 'sources', 'title']);
               });
           });
 })

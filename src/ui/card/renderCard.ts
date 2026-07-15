@@ -207,28 +207,6 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
           {
             type: 'div',
             props: {
-              style: {
-                display: 'flex', position: 'absolute', top: '-90px', right: '-90px',
-                width: '280px', height: '280px', borderRadius: '999px',
-                backgroundColor: hexToRgba(theme.blobColors[0], 0.15),
-              },
-              children: []
-            }
-          },
-          {
-            type: 'div',
-            props: {
-              style: {
-                display: 'flex', position: 'absolute', bottom: '-120px', left: '-70px',
-                width: '320px', height: '320px', borderRadius: '999px',
-                backgroundColor: hexToRgba(theme.blobColors[1], 0.12),
-              },
-              children: []
-            }
-          },
-          {
-            type: 'div',
-            props: {
               style: { display: 'flex', flexDirection: 'column', width: '100%', height: '100%', padding: '56px' },
               children: [
                 {

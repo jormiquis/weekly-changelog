@@ -1,13 +1,9 @@
-export interface DashboardPush {
-  diffUrl: string
-  commits: string[]
-}
-
 export interface DashboardRepo {
   name: string
   url: string
   totalCommits: number
-  pushes: DashboardPush[]
+  diffUrl: string
+  commits: string[]
 }
 
 export interface DashboardCreatedRepo {

@@ -8,18 +8,16 @@ export interface CardTheme {
   textPrimary: string
   textMuted: string
   weekPillBg: string
-  blobColors: [string, string]
 }
 
 export const defaultTheme: CardTheme = {
   width: 1200,
   height: 630,
   fontFamily: 'Poppins',
-  background: 'linear-gradient(135deg, #1e1b4b 0%, #3730a3 45%, #6d28d9 100%)',
-  cardBg: 'rgba(255, 255, 255, 0.08)',
-  cardBorder: 'rgba(255, 255, 255, 0.14)',
+  background: 'linear-gradient(160deg, #0d0d0d 0%, #1a1a19 100%)',
+  cardBg: 'rgba(255, 255, 255, 0.04)',
+  cardBorder: 'rgba(255, 255, 255, 0.10)',
   textPrimary: '#ffffff',
-  textMuted: 'rgba(255, 255, 255, 0.6)',
-  weekPillBg: 'rgba(255, 255, 255, 0.14)',
-  blobColors: ['#fbbf24', '#2dd4bf'],
+  textMuted: '#898781',
+  weekPillBg: 'rgba(255, 255, 255, 0.08)',
 }

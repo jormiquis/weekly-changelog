@@ -27,7 +27,7 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
     const totalCommits = repos.reduce((sum, repo) => sum + repo.commits, 0);
 
     sections.push({
-      accent: '#2dd4bf',
+      accent: '#3987e5',
       title: 'Work on personal repos',
       subtitle: `${totalCommits} commit${totalCommits === 1 ? '' : 's'} across ${repos.length} repo${repos.length === 1 ? '' : 's'}`,
       repos
@@ -38,7 +38,7 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
     const repoNames = createEvents.map(event => repoShortName(event.repo))
 
     sections.push({
-      accent: '#f472b6',
+      accent: '#008300',
       title: 'New repos created',
       subtitle: repoNames.join(', '),
       stats: [{ value: createEvents.length, label: 'repos' }]
@@ -53,7 +53,7 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
     }))
 
     sections.push({
-      accent: '#fbbf24',
+      accent: '#d55181',
       title: 'Knowledge gained',
       subtitle: `${notes.length} note${notes.length > 1 ? 's' : ''} added`,
       notes

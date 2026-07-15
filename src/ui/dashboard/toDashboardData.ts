@@ -10,16 +10,30 @@ function formatGeneratedAt(date: Date): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
+function parseCompareShas(diffUrl: string): { before: string; after: string } | null {
+  const match = diffUrl.match(/\/compare\/([0-9a-f]+)\.\.\.([0-9a-f]+)\.diff$/i)
+  if (!match) return null
+  return { before: match[1]!, after: match[2]! }
+}
+
+function combinedDiffUrl(fullName: string, pushes: PendingPush[]): string {
+  const newest = parseCompareShas(pushes[0]!.diffUrl)
+  const oldest = parseCompareShas(pushes[pushes.length - 1]!.diffUrl)
+  if (!newest || !oldest) return pushes[0]!.diffUrl
+
+  return `https://github.com/${fullName}/compare/${oldest.before}...${newest.after}.diff`
+}
+
+interface PendingPush {
+  diffUrl: string
+  commits: string[]
+}
+
 export interface BuildDashboardDataOptions {
   week: string
 }
 
 export function buildDashboardData(activities: Activity[], options: BuildDashboardDataOptions): DashboardData {
-  interface PendingPush {
-    diffUrl: string
-    commits: string[]
-  }
-
   const repoPushes = new Map<string, { url: string; pushes: PendingPush[] }>();
 
   for (const activity of activities) {
@@ -41,7 +55,8 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       name: repoShortName(fullName),
       url,
       totalCommits: pushes.reduce((sum, push) => sum + push.commits.length, 0),
-      pushes
+      diffUrl: combinedDiffUrl(fullName, pushes),
+      commits: pushes.flatMap(push => push.commits)
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
