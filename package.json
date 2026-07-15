@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsx src/main.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/ui/fonts dist/ui/fonts",
     "weekly": "node dist/main.js"
   },
   "keywords": [],
