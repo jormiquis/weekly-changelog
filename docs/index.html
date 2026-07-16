@@ -226,24 +226,24 @@
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
-      <h2 class="digest-headline">Dashboard and component updates with mapper improvements</h2>
-      <p class="digest-summary">Updates include dashboard creation, component styling, and mapper refinements for GitHub and Notion payloads.</p>
+      <h2 class="digest-headline">Telegram checker and AI digest pipeline integrated</h2>
+      <p class="digest-summary">New Telegram checker and AI digest generation pipeline introduced. Dashboard and changelog card components added for improved visibility.</p>
       <ul class="highlights">
       <li class="highlight">
-        <p class="highlight-text">Dashboard component creation</p>
-        <ul class="evidence"><li>feat: created dashboard</li><li>feat: created dashboard</li></ul>
+        <p class="highlight-text">Telegram checker implementation</p>
+        <ul class="evidence"><li>added telegramChecker</li><li>feat: added telegram checker</li></ul>
       </li>
       <li class="highlight">
-        <p class="highlight-text">Visual component restyling and card sizing</p>
-        <ul class="evidence"><li>feat: re-styles visual components</li><li>feat: made card larger for better readabily</li></ul>
+        <p class="highlight-text">AI digest generation pipeline</p>
+        <ul class="evidence"><li>feat: Implement MistralSourceSynthesizer for AI digest generation</li><li>feat: post generation delegated on deterministic approach</li></ul>
       </li>
       <li class="highlight">
-        <p class="highlight-text">Mapper enhancements for GitHub and Notion events</p>
-        <ul class="evidence"><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li></ul>
+        <p class="highlight-text">Dashboard and changelog card components</p>
+        <ul class="evidence"><li>feat: created new changelog card and adapted dashboard</li><li>feat: created dashboard</li><li>feat: added card component</li></ul>
       </li>
       <li class="highlight">
-        <p class="highlight-text">Build script and font distribution update</p>
-        <ul class="evidence"><li>feat: update build script to copy fonts to distribution</li></ul>
+        <p class="highlight-text">GitHub event handling improvements</p>
+        <ul class="evidence"><li>feat: Enhance event handling to ignore private GitHub events and update permissions</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li></ul>
       </li></ul>
     </section>
     
@@ -251,11 +251,11 @@
       <h2>Metrics</h2>
       <div class="metric-grid">
     <div class="metric-tile">
-      <span class="metric-value">75%</span>
+      <span class="metric-value">78%</span>
       <span class="metric-label">Atomic commits</span>
     </div>
     <div class="metric-tile">
-      <span class="metric-value">175</span>
+      <span class="metric-value">243</span>
       <span class="metric-label">Avg commit size (lines)</span>
     </div>
     <div class="metric-tile">
@@ -281,16 +281,21 @@
     <div class="bar-row">
       <span class="bar-label">feat</span>
       <span class="bar-track"><span class="bar-fill" style="width: 100%"></span></span>
-      <span class="bar-value">14</span>
+      <span class="bar-value">19</span>
     </div>
     <div class="bar-row">
       <span class="bar-label">other</span>
-      <span class="bar-track"><span class="bar-fill" style="width: 35.714285714285715%"></span></span>
-      <span class="bar-value">5</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 31.57894736842105%"></span></span>
+      <span class="bar-value">6</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">fix</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 5.263157894736842%"></span></span>
+      <span class="bar-value">1</span>
     </div>
     <div class="bar-row">
       <span class="bar-label">chore</span>
-      <span class="bar-track"><span class="bar-fill" style="width: 7.142857142857142%"></span></span>
+      <span class="bar-track"><span class="bar-fill" style="width: 5.263157894736842%"></span></span>
       <span class="bar-value">1</span>
     </div></div>
         </div>
@@ -300,17 +305,27 @@
     <div class="bar-row">
       <span class="bar-label">TypeScript</span>
       <span class="bar-track"><span class="bar-fill" style="width: 100%"></span></span>
-      <span class="bar-value">55</span>
+      <span class="bar-value">98</span>
     </div>
     <div class="bar-row">
       <span class="bar-label">HTML</span>
-      <span class="bar-track"><span class="bar-fill" style="width: 9.090909090909092%"></span></span>
-      <span class="bar-value">5</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 6.122448979591836%"></span></span>
+      <span class="bar-value">6</span>
     </div>
     <div class="bar-row">
       <span class="bar-label">JSON</span>
-      <span class="bar-track"><span class="bar-fill" style="width: 5.454545454545454%"></span></span>
-      <span class="bar-value">3</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 5.1020408163265305%"></span></span>
+      <span class="bar-value">5</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">YAML</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 1.0204081632653061%"></span></span>
+      <span class="bar-value">1</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Markdown</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 1.0204081632653061%"></span></span>
+      <span class="bar-value">1</span>
     </div></div>
         </div>
       </div>
@@ -324,7 +339,17 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Wed, Jul 15, 11:47 AM</span>
+          <span class="timeline-when">Thu, Jul 16, 4:38 PM</span>
+        </div>
+        <p class="timeline-meta">7 commits · +2719 −348</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Wed, Jul 15, 9:47 AM</span>
         </div>
         <p class="timeline-meta">1 commit · +1 −1</p>
       </div>
@@ -334,7 +359,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Wed, Jul 15, 6:55 AM</span>
+          <span class="timeline-when">Wed, Jul 15, 4:55 AM</span>
         </div>
         <p class="timeline-meta">1 commit · +66 −47</p>
       </div>
@@ -344,7 +369,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Wed, Jul 15, 6:22 AM</span>
+          <span class="timeline-when">Wed, Jul 15, 4:22 AM</span>
         </div>
         <p class="timeline-meta">1 commit · +255 −206</p>
       </div>
@@ -354,7 +379,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 10:10 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 8:10 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +496 −74</p>
       </div>
@@ -364,7 +389,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 10:02 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 8:02 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +516 −74</p>
       </div>
@@ -374,7 +399,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 9:45 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 7:45 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +70 −1</p>
       </div>
@@ -384,7 +409,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 9:33 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 7:33 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +0 −0</p>
       </div>
@@ -394,7 +419,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 9:28 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 7:28 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +872 −3</p>
       </div>
@@ -404,7 +429,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 6:31 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 4:31 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +5 −4</p>
       </div>
@@ -414,7 +439,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Tue, Jul 14, 5:51 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 3:51 PM</span>
         </div>
         <p class="timeline-meta">5 commits · +394 −220</p>
       </div>
@@ -424,7 +449,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Brag document, work diary for software engineers</span>
-          <span class="timeline-when">Tue, Jul 14, 4:11 PM</span>
+          <span class="timeline-when">Tue, Jul 14, 2:11 PM</span>
         </div>
         <p class="timeline-meta">Documentation · good-practices</p>
       </div>
@@ -434,7 +459,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Sun, Jul 12, 12:26 PM</span>
+          <span class="timeline-when">Sun, Jul 12, 10:26 AM</span>
         </div>
         <p class="timeline-meta">5 commits · +66 −37</p>
       </div>
@@ -444,7 +469,7 @@
       <div class="timeline-body">
         <div class="timeline-head">
           <span class="timeline-title">Pushed to weekly-changelog</span>
-          <span class="timeline-when">Fri, Jul 10, 9:59 PM</span>
+          <span class="timeline-when">Fri, Jul 10, 7:59 PM</span>
         </div>
         <p class="timeline-meta">1 commit · +73 −16</p>
       </div>
@@ -458,15 +483,15 @@
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
           <span class="head-meta">
-            <span class="diffstat"><span class="add">+2814</span> <span class="del">−683</span></span>
-            <span class="pill">20 commits</span>
+            <span class="diffstat"><span class="add">+5533</span> <span class="del">−1031</span></span>
+            <span class="pill">27 commits</span>
           </span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>Dashboard creation and component restyling improve user interface clarity and layout.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Integration of Telegram checker, AI digest pipeline, and dashboard components with GitHub event handling improvements.</p>
         <ul class="commits">
-          <li>feat: update build script to copy fonts to distribution</li><li>feat: made card larger for better readabily</li><li>feat: re-styles visual components</li><li>feat: created dashboard</li><li>feat: created dashboard</li><li>feat: added index html</li><li>chore: disable Jekyll for GitHub Pages</li><li>feat: added card component</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li><li>added commits management on gh push event</li>
+          <li>added telegramChecker</li><li>feat: added telegram checker</li><li>feat: Implement MistralSourceSynthesizer for AI digest generation</li><li>feat: Enhance event handling to ignore private GitHub events and update permissions</li><li>feat: created new changelog card and adapted dashboard</li><li>fix: updated ngative response from telegram bot</li><li>feat: post generation delegated on deterministic approach</li><li>feat: update build script to copy fonts to distribution</li><li>feat: made card larger for better readabily</li><li>feat: re-styles visual components</li><li>feat: created dashboard</li><li>feat: created dashboard</li><li>feat: added index html</li><li>chore: disable Jekyll for GitHub Pages</li><li>feat: added card component</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li><li>added commits management on gh push event</li>
         </ul>
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...445cbdab4713a05194d375d7fcfefb661eec3fc3.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...a96dfefbec856dcac8f94f294332a49d89c40a57.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
@@ -485,7 +510,7 @@
     
   </div>
   <footer>
-    Generated Jul 16, 6:24 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Jul 16, 4:49 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
 </body>
 </html>
