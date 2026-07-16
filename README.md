@@ -14,9 +14,10 @@ Designed to run entirely on **free tiers** — no paid API calls, ever.
 
 | Output | File | Purpose |
 |--------|------|---------|
-| Social card | `docs/card.png` | 1200×760 PNG for LinkedIn/X — deterministic highlights (commits per repo, new repos, notes), one color + emoji per event type. **No AI.** |
-| Dashboard | `docs/index.html` | Responsive light/dark page — AI hero digest, per-repo AI evaluation of commits, new repos, and notes. Served via GitHub Pages. |
+| Social card | `docs/card.png` | 1200×760 product-changelog PNG for LinkedIn/X — **Shipped** bullets (from feat/fix/refactor commits), **Learned** bullets (Notion notes), and a raw-stats bar (commits · notes · lines changed · repos). Deterministic, **no AI**. |
+| Dashboard | `docs/index.html` | Responsive light/dark page — evidence-backed AI highlights, a **metrics** panel, a **weekly timeline**, raw commits grouped by repo with diff stats, new repos, and detailed learnings. Served via GitHub Pages. |
 | Approval | Telegram message | The card is sent to your chat; reply `yes` to approve or `no` to reject before publishing. |
+| LinkedIn post | On approval | The card is posted natively with a hook + hashtags; the dashboard link goes in the first comment (LinkedIn algorithm best practice). |
 
 ---
 
@@ -34,6 +35,7 @@ flowchart TB
         EM["EventMapper\n(port)"]
         SS["SourceSynthesizer\n(port)"]
         CH["Checker\n(port)"]
+        SE["Sender\n(port)"]
         FB["FallbackSourceSynthesizer\n(free-tier chain)"]
         PR["buildDigestPrompt\nparseDigestResponse"]
     end
@@ -44,11 +46,13 @@ flowchart TB
         MI["mistral/\nSourceSynthesizer"]
         GR["groq/\nSourceSynthesizer"]
         TG["telegram/\nChecker"]
+        LI["linkedin/\nSender"]
     end
 
     subgraph ui["ui/ (rendering)"]
         CARD["card/\nrenderCard (satori + resvg)"]
         DASH["dashboard/\nrenderDashboard (HTML)"]
+        POST["post/\nbuildPost (LinkedIn copy)"]
     end
 
     MAIN["main.ts\n(composition root)"]
@@ -56,8 +60,9 @@ flowchart TB
     MAIN --> GH & NO
     MAIN --> FB
     FB --> MI --> GR
-    MAIN --> CARD & DASH
+    MAIN --> CARD & DASH & POST
     MAIN --> TG
+    MAIN --> LI
 
     GH -.implements.-> SR
     NO -.implements.-> SR
@@ -65,6 +70,7 @@ flowchart TB
     GR -.implements.-> SS
     FB -.implements.-> SS
     TG -.implements.-> CH
+    LI -.implements.-> SE
     FB --> PR
 ```
 
@@ -77,6 +83,8 @@ flowchart TB
 - **`SourceRetriever`** normalizes any activity source into a common `Activity`.
   GitHub and Notion are just two adapters; a future source (e.g. GitLab, PRs) is another.
 - **`Checker`** is the human-approval gate. Telegram is one implementation.
+- **`Sender`** publishes the approved post. LinkedIn is one implementation; another
+  network (X, Mastodon) would be a new adapter over the same `Post`.
 
 ---
 
@@ -91,6 +99,7 @@ sequenceDiagram
     participant AI as Mistral → Groq
     participant UI as Card + Dashboard
     participant TG as Telegram
+    participant LI as LinkedIn
 
     Cron->>Main: npm run weekly (Wed 08:00 UTC)
     par Fetch activity (last 7 days)
@@ -112,7 +121,12 @@ sequenceDiagram
     Main->>UI: render card.png + index.html
     Main->>TG: send card for approval
     TG-->>Main: reply "yes" / "no"
-    Note over Main: approved → publish · rejected → skip
+    alt approved
+        Main->>LI: upload card + create post (hook, no link)
+        Main->>LI: dashboard link as first comment
+    else rejected
+        Note over Main: skip publishing
+    end
 ```
 
 The pipeline **never hard-fails on the AI step**: if every provider is unavailable,
@@ -132,19 +146,27 @@ src/
 │   ├── EventMapper.ts          # Port: raw event → Activity
 │   ├── SourceSynthesizer.ts    # Port: activities → AI digest
 │   ├── FallbackSourceSynthesizer.ts  # Free-tier provider chain
-│   ├── SynthesizedDigest.ts    # Digest shape + runtime validation
+│   ├── SynthesizedDigest.ts    # Digest shape (evidence-backed highlights) + validation
 │   ├── buildDigestPrompt.ts    # Impersonal-tone prompt builder
 │   ├── parseDigestResponse.ts  # Strict JSON parse + shape guard
-│   └── Checker.ts              # Port: human approval gate
+│   ├── computeMetrics.ts       # 8 code-activity metrics (pure)
+│   ├── commitType.ts           # Conventional-commit classifier (atomic proxy)
+│   ├── languageFromPath.ts     # File path → display language
+│   ├── buildTimeline.ts        # Chronological typed events + metadata
+│   ├── Checker.ts              # Port: human approval gate
+│   ├── Post.ts                 # Post payload (text + image + link)
+│   └── Sender.ts              # Port: publish an approved post
 ├── infra/                      # Adapters (one folder per provider)
 │   ├── github/                 # Retriever + push/create mappers
 │   ├── notion/                 # Retriever + note mapper
 │   ├── mistral/                # Primary LLM adapter
 │   ├── groq/                   # Fallback LLM adapter
-│   └── telegram/               # Approval adapter
+│   ├── telegram/               # Approval adapter (Checker)
+│   └── linkedin/               # Publishing adapter (Sender)
 ├── ui/
 │   ├── card/                   # satori + resvg → PNG (fixed design)
 │   ├── dashboard/              # HTML string builder (light/dark, responsive)
+│   ├── post/                   # buildPost — LinkedIn-optimized copy
 │   └── fonts/                  # Poppins .ttf (bundled into dist on build)
 └── main.ts                     # Composition root
 
@@ -183,6 +205,10 @@ GROQ_API_KEY=          # console.groq.com
 TELEGRAM_BOT_TOKEN=    # from @BotFather
 TELEGRAM_CHAT_ID=      # your chat id
 
+# LinkedIn publishing (Posts API — scope w_member_social)
+LINKEDIN_ACCESS_TOKEN= # member access token
+LINKEDIN_AUTHOR_URN=   # e.g. urn:li:person:xxxxxxxx
+
 # Optional: overrides the default https://<user>.github.io/weekly-changelog/
 DASHBOARD_URL=
 ```
@@ -201,8 +227,8 @@ npm run dev        # tsx src/main.ts
 The workflow `.github/workflows/generate-weekly-post.yml` runs every **Wednesday at
 08:00 UTC** (and on manual `workflow_dispatch`). Configure in your repo:
 
-- **Secrets:** `GH_TOKEN`, `NOTION_API_KEY`, `MISTRAL_API_KEY`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`
-- **Variables:** `USERNAME`, `NOTION_DATABASE_ID`, `TELEGRAM_CHAT_ID`
+- **Secrets:** `GH_TOKEN`, `NOTION_API_KEY`, `MISTRAL_API_KEY`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`, `LINKEDIN_ACCESS_TOKEN`
+- **Variables:** `USERNAME`, `NOTION_DATABASE_ID`, `TELEGRAM_CHAT_ID`, `LINKEDIN_AUTHOR_URN`
 
 ---
 
@@ -219,6 +245,7 @@ Every moving part is chosen to stay within a permanent free tier — not a trial
 | **Mistral (primary)** | Free tier, no card required; EU provider (no region block). One call/week. |
 | **Groq (fallback)** | Generous free tier, no card required. Only called if Mistral fails. |
 | **Telegram Bot API** | Free. |
+| **LinkedIn Posts API** | Free (one post + one comment per approved week). |
 | **Rendering (satori + resvg)** | Runs locally on the runner — no external service. |
 
 **Cost guardrails already in the code:**
@@ -237,13 +264,13 @@ Every moving part is chosen to stay within a permanent free tier — not a trial
 > render.
 
 
-### Known gap (by design decision)
+### Publishing on approval
 
-The workflow **generates** `docs/` but does not itself commit/deploy them — the
-"publish" step after approval is currently a log line. To actually publish on
-approval you'd add a deploy step (e.g. commit `docs/` or a Pages deploy action)
-gated on the approval result. Left out intentionally so nothing is published
-without an explicit follow-up.
+When you reply `yes`, the run: (1) signals the workflow via a step output, (2) posts
+the card to LinkedIn, and (3) a subsequent workflow step — gated on that output —
+commits the freshly generated `docs/` back to the repo, which rebuilds GitHub Pages.
+Rejecting skips all three. The dashboard URL is stable, so the LinkedIn link resolves
+to the updated page once Pages finishes rebuilding (usually under a minute).
 
 ---
 

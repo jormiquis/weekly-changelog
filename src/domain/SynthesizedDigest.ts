@@ -3,10 +3,16 @@ export interface CommitEvaluation {
   evaluation: string
 }
 
+export interface Highlight {
+  text: string
+  /** Concrete commit messages / note titles the highlight is grounded in. */
+  evidence: string[]
+}
+
 export interface SynthesizedDigest {
   headline: string
   summary: string
-  highlights: string[]
+  highlights: Highlight[]
   commitEvaluations: CommitEvaluation[]
 }
 
@@ -21,6 +27,17 @@ function isCommitEvaluation(value: unknown): value is CommitEvaluation {
     && candidate.evaluation.trim().length > 0
 }
 
+function isHighlight(value: unknown): value is Highlight {
+  if (typeof value !== 'object' || value === null) return false
+
+  const candidate = value as Record<string, unknown>
+
+  return typeof candidate.text === 'string'
+    && candidate.text.trim().length > 0
+    && Array.isArray(candidate.evidence)
+    && candidate.evidence.every(item => typeof item === 'string')
+}
+
 export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest {
   if (typeof value !== 'object' || value === null) return false
 
@@ -31,7 +48,7 @@ export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest 
     && typeof candidate.summary === 'string'
     && candidate.summary.trim().length > 0
     && Array.isArray(candidate.highlights)
-    && candidate.highlights.every(highlight => typeof highlight === 'string')
+    && candidate.highlights.every(isHighlight)
     && Array.isArray(candidate.commitEvaluations)
     && candidate.commitEvaluations.every(isCommitEvaluation)
 }

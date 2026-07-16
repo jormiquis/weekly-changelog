@@ -13,11 +13,23 @@ export class GithubPushEventMapper implements EventMapper {
             message: commit.commit.message,
         }));
 
+        const files = (event.rawCommits.files ?? []).map((file: { filename: string; additions: number; deletions: number }) => ({
+            filename: file.filename,
+            additions: file.additions ?? 0,
+            deletions: file.deletions ?? 0,
+        }));
+
+        const additions = files.reduce((sum: number, file: { additions: number }) => sum + file.additions, 0);
+        const deletions = files.reduce((sum: number, file: { deletions: number }) => sum + file.deletions, 0);
+
         return Activity.create(new Date(event.created_at),{
             repo: event.repo,
             type: 'PushEvent',
             diff: event.rawCommits.diff_url,
-            commitMessages
+            commitMessages,
+            additions,
+            deletions,
+            files
         });
     }
 }

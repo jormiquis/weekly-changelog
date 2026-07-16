@@ -1,9 +1,18 @@
+export interface CommitFile {
+  filename: string
+  additions: number
+  deletions: number
+}
+
 export interface PushEventMeta {
   [key: string]: unknown
   type: 'PushEvent'
   repo: { name: string }
   diff: string
   commitMessages: { message: string }[]
+  additions: number
+  deletions: number
+  files: CommitFile[]
 }
 
 export interface CreateRepoEventMeta {

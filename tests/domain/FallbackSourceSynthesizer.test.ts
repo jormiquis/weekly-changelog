@@ -5,7 +5,7 @@ import type { SynthesizedDigest } from '../../src/domain/SynthesizedDigest.js';
 import { FallbackSourceSynthesizer } from '../../src/domain/FallbackSourceSynthesizer.js';
 
 function fakeDigest(headline: string): SynthesizedDigest {
-  return { headline, summary: 'A quiet but productive week.', highlights: ['Feature shipped'], commitEvaluations: [] };
+  return { headline, summary: 'A quiet but productive week.', highlights: [{ text: 'Feature shipped', evidence: [] }], commitEvaluations: [] };
 }
 
 function synthesizerThatResolves(digest: SynthesizedDigest): SourceSynthesizer {

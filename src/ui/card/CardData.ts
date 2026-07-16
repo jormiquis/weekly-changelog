@@ -1,13 +1,16 @@
-export interface CardHighlight {
-  emoji: string
-  text: string
-  /** Hex accent color, e.g. "#2dd4bf". Differentiates the event type. */
-  accent: string
+export interface CardStats {
+  commits: number
+  notes: number
+  linesChanged: number
+  repos: number
 }
 
 export interface CardData {
   week: string
-  highlights: CardHighlight[]
+  version: string
+  shipped: string[]
+  learned: string[]
+  stats: CardStats
   title?: string
   subtitle?: string
 }

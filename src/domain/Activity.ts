@@ -12,6 +12,10 @@ export class Activity {
         return new Activity(createdAt, metaData);
     }
 
+    public get occurredAt(): Date {
+        return this.createdAt;
+    }
+
     public hasBeenCreatedOnLastWeek(today: Date): boolean {
           const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
           const diff = today.getTime() - this.createdAt.getTime();

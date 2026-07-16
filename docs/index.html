@@ -29,6 +29,8 @@
       --accent-yellow: #eda100;
       --accent-yellow-bg: rgba(237, 161, 0, 0.14);
 
+      --add-color: #0a7f28;
+      --del-color: #c0392f;
       --tag-bg: rgba(11, 11, 11, 0.05);
     }
 
@@ -52,6 +54,8 @@
         --accent-yellow: #c98500;
         --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
+        --add-color: #3fb950;
+        --del-color: #f85149;
         --tag-bg: rgba(255, 255, 255, 0.06);
       }
     }
@@ -75,6 +79,8 @@
       --accent-yellow: #c98500;
       --accent-yellow-bg: rgba(201, 133, 0, 0.18);
 
+      --add-color: #3fb950;
+      --del-color: #f85149;
       --tag-bg: rgba(255, 255, 255, 0.06);
     }
 
@@ -100,8 +106,9 @@
     .week-pill { font-size: 14px; font-weight: 500; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 16px; border-radius: 999px; white-space: nowrap; }
 
     .dashboard-section h2 { font-size: 18px; font-weight: 600; margin: 0 0 14px; color: var(--text-primary); }
+    .muted { color: var(--text-muted); font-size: 14px; margin: 0; }
 
-    .entry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; }
+    .entry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 14px; }
 
     .entry-card {
       background: var(--surface);
@@ -116,6 +123,7 @@
     .accent-magenta { --accent: var(--accent-magenta); --accent-bg: var(--accent-magenta-bg); }
     .accent-yellow { --accent: var(--accent-yellow); --accent-bg: var(--accent-yellow-bg); }
 
+    /* Digest hero */
     .digest-hero {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -124,20 +132,60 @@
       box-shadow: var(--shadow);
       padding: 24px 28px;
     }
-    .digest-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+    .digest-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
     .digest-headline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; color: var(--text-primary); margin: 0 0 10px; }
-    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 14px; }
-    .digest-hero .tags { margin-bottom: 0; }
+    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 16px; }
+    .highlights { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+    .highlight { background: var(--tag-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .highlight-text { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0 0 8px; }
+    .evidence { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .evidence li { font-size: 12.5px; line-height: 1.45; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border); word-break: break-word; }
 
+    .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; }
+
+    /* Metrics */
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 12px; margin-bottom: 16px; }
+    .metric-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .metric-value { font-size: 26px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .metric-label { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 14px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 20px; }
+    .chart-card h3 { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 14px; }
+    .bars { display: flex; flex-direction: column; gap: 10px; }
+    .bar-row { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 10px; }
+    .bar-label { font-size: 13px; color: var(--text-secondary); text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 8px; background: var(--tag-bg); border-radius: 999px; overflow: hidden; }
+    .bar-fill { display: block; height: 100%; background: var(--accent-blue); border-radius: 999px; }
+    .bar-value { font-size: 13px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+    /* Timeline */
+    .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    .timeline-item { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding-bottom: 18px; position: relative; }
+    .timeline-item:not(:last-child)::before { content: ''; position: absolute; left: 19px; top: 34px; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-dot { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; box-shadow: var(--shadow); z-index: 1; }
+    .timeline-body { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 12px 16px; }
+    .timeline-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .timeline-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .timeline-when { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .timeline-meta { font-size: 13.5px; color: var(--text-secondary); margin: 4px 0 0; word-break: break-word; }
+    .type-note .timeline-dot { border-color: var(--accent-magenta); }
+    .type-repo .timeline-dot { border-color: var(--accent-green); }
+    .type-push .timeline-dot { border-color: var(--accent-blue); }
+
+    /* Repo cards */
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .entry-title { font-size: 16px; font-weight: 600; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 8px; word-break: break-word; }
     .entry-title:hover { text-decoration: underline; }
     .emoji { font-size: 17px; }
+    .head-meta { display: flex; align-items: center; gap: 10px; }
+    .diffstat { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .diffstat .add { color: var(--add-color); }
+    .diffstat .del { color: var(--del-color); }
 
     .pill { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
 
-    .repo-evaluation { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); background: var(--tag-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
-    .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
+    .repo-evaluation { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); background: var(--tag-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
 
     .commits { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 5px; }
     .commits li { font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); word-break: break-word; }
@@ -152,6 +200,7 @@
     .tag { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: var(--tag-bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; }
 
     .sources { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+    .sources-label { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
     .sources a, .sources span { color: var(--text-secondary); word-break: break-all; }
     .sources a { color: var(--accent-blue); }
 
@@ -164,6 +213,7 @@
     @media (max-width: 480px) {
       .entry-card { padding: 16px; }
       .entry-title { font-size: 15px; }
+      .bar-row { grid-template-columns: 76px 1fr auto; }
     }
   </style>
 </head>
@@ -171,47 +221,271 @@
   <div class="page">
     <header class="page-header">
       <h1>Weekly Changelog</h1>
-      <span class="week-pill">Week of Jul 15</span>
+      <span class="week-pill">Week of Jul 16</span>
     </header>
     
     <section class="digest-hero accent-yellow">
-      <p class="digest-eyebrow">This week</p>
-      <h2 class="digest-headline">Dashboard and component updates in weekly engineering activity</h2>
-      <p class="digest-summary">Dashboard creation and component restyling were primary focuses. GitHub and Notion integration flows were unified.</p>
-      <div class="tags"><span class="tag">Dashboard creation completed</span><span class="tag">Visual component restyling implemented</span><span class="tag">GitHub and Notion flow unification</span><span class="tag">Font distribution via build script updated</span></div>
+      <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
+      <h2 class="digest-headline">Dashboard and component updates in weekly changelog</h2>
+      <p class="digest-summary">New dashboard and card component implementations alongside GitHub event mapping refinements. Documentation reference added for engineering practices.</p>
+      <ul class="highlights">
+      <li class="highlight">
+        <p class="highlight-text">Dashboard creation and styling updates</p>
+        <ul class="evidence"><li>feat: created dashboard</li><li>feat: re-styles visual components</li></ul>
+      </li>
+      <li class="highlight">
+        <p class="highlight-text">Card component size and readability adjustment</p>
+        <ul class="evidence"><li>feat: made card larger for better readabily</li></ul>
+      </li>
+      <li class="highlight">
+        <p class="highlight-text">GitHub event mapping and payload enrichment</p>
+        <ul class="evidence"><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat added some new property to notion payload mapping</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li></ul>
+      </li>
+      <li class="highlight">
+        <p class="highlight-text">Documentation reference for engineering practices</p>
+        <ul class="evidence"><li>Note captured: &quot;Brag document, work diary for software engineers&quot;</li></ul>
+      </li></ul>
     </section>
     
     <section class="dashboard-section">
-      <h2>Commits</h2>
+      <h2>Metrics</h2>
+      <div class="metric-grid">
+    <div class="metric-tile">
+      <span class="metric-value">75%</span>
+      <span class="metric-label">Atomic commits</span>
+    </div>
+    <div class="metric-tile">
+      <span class="metric-value">175</span>
+      <span class="metric-label">Avg commit size (lines)</span>
+    </div>
+    <div class="metric-tile">
+      <span class="metric-value">0%</span>
+      <span class="metric-label">Test ratio</span>
+    </div>
+    <div class="metric-tile">
+      <span class="metric-value">0%</span>
+      <span class="metric-label">Refactor ratio</span>
+    </div>
+    <div class="metric-tile">
+      <span class="metric-value">0%</span>
+      <span class="metric-label">Documentation ratio</span>
+    </div>
+    <div class="metric-tile">
+      <span class="metric-value">1</span>
+      <span class="metric-label">Repository</span>
+    </div></div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Commits by type</h3>
+          <div class="bars">
+    <div class="bar-row">
+      <span class="bar-label">feat</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 100%"></span></span>
+      <span class="bar-value">14</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">other</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 35.714285714285715%"></span></span>
+      <span class="bar-value">5</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">chore</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 7.142857142857142%"></span></span>
+      <span class="bar-value">1</span>
+    </div></div>
+        </div>
+        <div class="chart-card">
+          <h3>Languages</h3>
+          <div class="bars">
+    <div class="bar-row">
+      <span class="bar-label">TypeScript</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 100%"></span></span>
+      <span class="bar-value">55</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">HTML</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 9.090909090909092%"></span></span>
+      <span class="bar-value">5</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">JSON</span>
+      <span class="bar-track"><span class="bar-fill" style="width: 5.454545454545454%"></span></span>
+      <span class="bar-value">3</span>
+    </div></div>
+        </div>
+      </div>
+    </section>
+    
+    <section class="dashboard-section">
+      <h2>Weekly timeline</h2>
+      <ul class="timeline">
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Wed, Jul 15, 11:47 AM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +1 −1</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Wed, Jul 15, 6:55 AM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +66 −47</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Wed, Jul 15, 6:22 AM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +255 −206</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 10:10 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +496 −74</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 10:02 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +516 −74</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 9:45 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +70 −1</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 9:33 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +0 −0</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 9:28 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +872 −3</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 6:31 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +5 −4</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Tue, Jul 14, 5:51 PM</span>
+        </div>
+        <p class="timeline-meta">5 commits · +394 −220</p>
+      </div>
+    </li>
+    <li class="timeline-item type-note">
+      <span class="timeline-dot">📝</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Brag document, work diary for software engineers</span>
+          <span class="timeline-when">Tue, Jul 14, 4:11 PM</span>
+        </div>
+        <p class="timeline-meta">Documentation · good-practices</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Sun, Jul 12, 12:26 PM</span>
+        </div>
+        <p class="timeline-meta">5 commits · +66 −37</p>
+      </div>
+    </li>
+    <li class="timeline-item type-push">
+      <span class="timeline-dot">💻</span>
+      <div class="timeline-body">
+        <div class="timeline-head">
+          <span class="timeline-title">Pushed to weekly-changelog</span>
+          <span class="timeline-when">Fri, Jul 10, 9:59 PM</span>
+        </div>
+        <p class="timeline-meta">1 commit · +73 −16</p>
+      </div>
+    </li></ul>
+    </section>
+    
+    <section class="dashboard-section">
+      <h2>Commits by repository</h2>
       <div class="entry-grid">
       <article class="entry-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
-          <span class="pill">20 commits</span>
+          <span class="head-meta">
+            <span class="diffstat"><span class="add">+2814</span> <span class="del">−683</span></span>
+            <span class="pill">20 commits</span>
+          </span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>Integration of GitHub and Notion event flows with unified processing in main.ts.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Addition of dashboard and card components with visual styling improvements and GitHub event mapping refinements</p>
         <ul class="commits">
           <li>feat: update build script to copy fonts to distribution</li><li>feat: made card larger for better readabily</li><li>feat: re-styles visual components</li><li>feat: created dashboard</li><li>feat: created dashboard</li><li>feat: added index html</li><li>chore: disable Jekyll for GitHub Pages</li><li>feat: added card component</li><li>feat: added rule to gh mapper for just capturing pushes for owner repos</li><li>feat: added mapping for cretion event</li><li>feat: added gh mappers</li><li>fixed commit messages retrieving</li><li>feat added some new property to notion payload mapping</li><li>feat: added notion mapper</li><li>feat: unify notion and gh flows on main.ts</li><li>feat: used private api and mapped useful props from gh response</li><li>added test for new payload</li><li>added test for new payload</li><li>feat: add &#39;type&#39; field to enriched push event data and update tests</li><li>added commits management on gh push event</li>
         </ul>
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...445cbdab4713a05194d375d7fcfefb661eec3fc3.diff" target="_blank" rel="noopener">View diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/b0b50b8558da621205e80240edfebaacd7f7fa6e...445cbdab4713a05194d375d7fcfefb661eec3fc3.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
     
     <section class="dashboard-section">
-      <h2>Knowledge gained</h2>
+      <h2>Learnings</h2>
       <div class="entry-grid">
       <article class="entry-card accent-magenta">
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>Brag document, work diary for software engineers</span>
         </header>
-        <div class="sources"><a href="https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/" target="_blank" rel="noopener">https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/</a><a href="https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com" target="_blank" rel="noopener">https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com</a></div>
+        <div class="tags"><span class="tag">Documentation</span><span class="tag">good-practices</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/" target="_blank" rel="noopener">https://blog.pragmaticengineer.com/work-log-template-for-software-engineers/</a><a href="https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com" target="_blank" rel="noopener">https://jvns.ca/blog/brag-documents/?ref=blog.pragmaticengineer.com</a></div>
       </article></div>
     </section>
     
   </div>
   <footer>
-    Generated Jul 15, 6:56 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Jul 16, 10:46 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
 </body>
 </html>

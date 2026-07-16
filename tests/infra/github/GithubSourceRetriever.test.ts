@@ -146,7 +146,7 @@ describe("gitHub sourceRetriever implementation test", () => {
             pushEvents.forEach(PushEvent => {
                 const metaDataKeys = Object.keys(PushEvent.metaData);
 
-                expect(metaDataKeys).toEqual(['repo', 'type', 'diff', 'commitMessages']);
+                expect(metaDataKeys).toEqual(['repo', 'type', 'diff', 'commitMessages', 'additions', 'deletions', 'files']);
             });
         });
 

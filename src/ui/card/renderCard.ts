@@ -3,7 +3,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import type { CardData, CardHighlight } from './CardData.js';
+import type { CardData } from './CardData.js';
 import { type CardTheme, defaultTheme } from './CardTheme.js';
 
 const fontsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'fonts')
@@ -25,7 +25,26 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const MAX_HIGHLIGHTS_SHOWN = 10
+const SHIPPED_ACCENT = '#2fae2f'
+const LEARNED_ACCENT = '#d55181'
+const VERSION_ACCENT = '#3987e5'
+const COLUMN_WIDTH = 532
+const BULLET_TEXT_WIDTH = COLUMN_WIDTH - 64 // minus horizontal padding
+const CHARS_PER_LINE = 40 // approx chars that fit one line at the bullet font size
+
+interface SatoriNode {
+  type: string
+  props: { style: Record<string, unknown>; children?: unknown }
+}
+
+/** A text leaf. Satori measures text height wrong if the leaf itself is display:flex, so leaves stay block. */
+function text(content: string, style: Record<string, unknown>): SatoriNode {
+  return { type: 'div', props: { style, children: content } }
+}
+
+function box(style: Record<string, unknown>, children: SatoriNode[]): SatoriNode {
+  return { type: 'div', props: { style: { display: 'flex', ...style }, children } }
+}
 
 function hexToRgba(hex: string, alpha: number): string {
   const clean = hex.replace('#', '')
@@ -36,178 +55,116 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-interface SatoriNode {
-  type: string
-  props: { style: Record<string, unknown>; children: unknown }
+const LINE_PX = 38
+
+/** Estimated rendered lines for a "•  {value}" bullet (accounts for word wrap, no ellipsis). */
+function bulletLines(value: string): number {
+  return Math.max(1, Math.ceil((value.length + 3) / CHARS_PER_LINE))
 }
 
-function highlightChip(theme: CardTheme, highlight: CardHighlight, large: boolean): SatoriNode {
-  return {
-    type: 'div',
-    props: {
-      style: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: large ? '16px' : '12px',
-        maxWidth: large ? '520px' : '420px',
-        backgroundColor: hexToRgba(highlight.accent, 0.12),
-        border: `1px solid ${theme.cardBorder}`,
-        borderLeft: `4px solid ${highlight.accent}`,
-        borderRadius: '16px',
-        padding: large ? '22px 30px' : '16px 22px',
-      },
-      children: [
-        { type: 'div', props: { style: { display: 'flex', fontSize: large ? '36px' : '28px' }, children: highlight.emoji } },
-        { type: 'div', props: { style: { display: 'flex', fontSize: large ? '22px' : '19px', fontWeight: 600, color: theme.textPrimary, lineHeight: 1.35 }, children: highlight.text } }
-      ]
-    }
-  }
+/** Total rendered lines a column of bullets occupies (min 1 for the empty placeholder). */
+export function columnLineCount(bullets: string[]): number {
+  if (bullets.length === 0) return 1
+  return bullets.reduce((sum, value) => sum + bulletLines(value), 0)
 }
 
-function moreChip(theme: CardTheme, count: number, large: boolean): SatoriNode {
-  return {
-    type: 'div',
-    props: {
-      style: {
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: theme.cardBg,
-        border: `1px dashed ${theme.cardBorder}`,
-        borderRadius: '16px',
-        padding: large ? '22px 30px' : '16px 22px',
-      },
-      children: [
-        { type: 'div', props: { style: { fontSize: large ? '20px' : '18px', fontWeight: 600, color: theme.textMuted }, children: `+${count} more` } }
-      ]
-    }
-  }
+function column(theme: CardTheme, accent: string, emoji: string, title: string, bullets: string[], height: number): SatoriNode {
+  const shown = bullets.length > 0 ? bullets : ['—']
+  const bulletBlock = shown.map(value => bullets.length > 0 ? `•  ${value}` : value).join('\n')
+
+  return box({
+    flexDirection: 'column',
+    width: `${COLUMN_WIDTH}px`,
+    height: `${height}px`,
+    flexShrink: 0,
+    gap: '18px',
+    backgroundColor: theme.cardBg,
+    border: `1px solid ${theme.cardBorder}`,
+    borderTop: `4px solid ${accent}`,
+    borderRadius: '20px',
+    padding: '30px 32px',
+  }, [
+    text(`${emoji}  ${title}`, { fontSize: '18px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent }),
+    // satori under-measures a hard-wrapped block, so the height is set explicitly.
+    text(bulletBlock, {
+      width: `${BULLET_TEXT_WIDTH}px`,
+      height: `${columnLineCount(bullets) * LINE_PX}px`,
+      whiteSpace: 'pre-wrap',
+      fontSize: '21px',
+      fontWeight: 500,
+      lineHeight: `${LINE_PX}px`,
+      color: bullets.length > 0 ? theme.textPrimary : theme.textMuted,
+    })
+  ])
 }
 
-function emptyState(theme: CardTheme) {
-  return {
-    type: 'div',
-    props: {
-      style: {
-        display: 'flex',
-        flex: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.cardBg,
-        border: `1px solid ${theme.cardBorder}`,
-        borderRadius: '24px',
-      },
-      children: [
-        { type: 'div', props: { style: { display: 'flex', fontSize: '42px' }, children: '🌙' } },
-        { type: 'div', props: { style: { display: 'flex', fontSize: '20px', color: theme.textMuted, marginTop: '14px' }, children: 'No activity recorded this week' } }
-      ]
-    }
-  }
+function statTile(theme: CardTheme, value: string, label: string): SatoriNode {
+  return box({ flexDirection: 'column', flex: 1, alignItems: 'center', gap: '6px' }, [
+    text(value, { fontSize: '40px', fontWeight: 700, color: theme.textPrimary }),
+    text(label, { fontSize: '15px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: theme.textMuted })
+  ])
 }
 
-function highlightsGrid(theme: CardTheme, highlights: CardHighlight[]) {
-  if (highlights.length === 0) return emptyState(theme)
+function statsBar(theme: CardTheme, data: CardData): SatoriNode {
+  const tiles = [
+    statTile(theme, String(data.stats.commits), 'commits'),
+    statTile(theme, String(data.stats.notes), 'notes'),
+    statTile(theme, data.stats.linesChanged.toLocaleString('en-US'), 'lines changed'),
+    statTile(theme, String(data.stats.repos), data.stats.repos === 1 ? 'repo' : 'repos'),
+  ]
 
-  const hasOverflow = highlights.length > MAX_HIGHLIGHTS_SHOWN
-  const shownCount = hasOverflow ? MAX_HIGHLIGHTS_SHOWN - 1 : highlights.length
-  const shown = highlights.slice(0, shownCount)
-  const overflow = highlights.length - shownCount
-  const large = shownCount + (overflow > 0 ? 1 : 0) <= 4
+  const children: SatoriNode[] = []
+  tiles.forEach((tile, index) => {
+    if (index > 0) children.push(box({ width: '1px', alignSelf: 'stretch', backgroundColor: theme.cardBorder, marginTop: '6px', marginBottom: '6px' }, []))
+    children.push(tile)
+  })
 
-  const chips: SatoriNode[] = shown.map(highlight => highlightChip(theme, highlight, large))
-  if (overflow > 0) chips.push(moreChip(theme, overflow, large))
+  return box({
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: theme.cardBg,
+    border: `1px solid ${theme.cardBorder}`,
+    borderRadius: '20px',
+    padding: '26px 20px',
+  }, children)
+}
 
-  return {
-    type: 'div',
-    props: {
-      style: { display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' },
-      children: [
-        {
-          type: 'div',
-          props: {
-            style: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '18px' },
-            children: chips
-          }
-        }
-      ]
-    }
-  }
+function header(theme: CardTheme, data: CardData, title: string, subtitle: string): SatoriNode {
+  return box({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, [
+    box({ flexDirection: 'row', alignItems: 'center', gap: '18px' }, [
+      text('📋', { fontSize: '46px' }),
+      box({ flexDirection: 'column' }, [
+        text(title, { fontSize: '40px', fontWeight: 700, letterSpacing: '0.02em', color: theme.textPrimary }),
+        text(subtitle, { fontSize: '19px', fontWeight: 400, color: theme.textMuted, marginTop: '2px' })
+      ])
+    ]),
+    box({ flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }, [
+      text(data.version, { fontSize: '22px', fontWeight: 600, color: VERSION_ACCENT, backgroundColor: hexToRgba(VERSION_ACCENT, 0.14), padding: '8px 20px', borderRadius: '999px' }),
+      text(data.week, { fontSize: '17px', color: theme.textMuted })
+    ])
+  ])
 }
 
 export async function renderCard(data: CardData, theme: CardTheme = defaultTheme): Promise<Buffer> {
-  const title = data.title ?? 'Weekly Changelog'
-  const subtitle = data.subtitle ?? 'Weekly activity summary'
+  const title = data.title ?? 'Changelog'
+  const subtitle = data.subtitle ?? 'Weekly engineering release'
+
+  // Header (~30) + gap (18) + bullet lines + vertical padding (60); both columns share the taller one.
+  const maxLines = Math.max(columnLineCount(data.shipped), columnLineCount(data.learned))
+  const columnHeight = 30 + 18 + maxLines * LINE_PX + 60
 
   const svg = await satori(
-    {
-      type: 'div',
-      props: {
-        style: {
-          display: 'flex',
-          position: 'relative',
-          overflow: 'hidden',
-          width: `${theme.width}px`,
-          height: `${theme.height}px`,
-          background: theme.background,
-          fontFamily: theme.fontFamily,
-        },
-        children: [
-          {
-            type: 'div',
-            props: {
-              style: { display: 'flex', flexDirection: 'column', width: '100%', height: '100%', padding: '56px' },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-                    children: [
-                      {
-                        type: 'div',
-                        props: {
-                          style: { display: 'flex', flexDirection: 'row', alignItems: 'center' },
-                          children: [
-                            { type: 'div', props: { style: { display: 'flex', fontSize: '44px', marginRight: '18px' }, children: '📅' } },
-                            {
-                              type: 'div',
-                              props: {
-                                style: { display: 'flex', flexDirection: 'column' },
-                                children: [
-                                  { type: 'div', props: { style: { fontSize: '42px', fontWeight: 700, color: theme.textPrimary }, children: title } },
-                                  { type: 'div', props: { style: { fontSize: '20px', fontWeight: 400, color: theme.textMuted, marginTop: '4px' }, children: subtitle } }
-                                ]
-                              }
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        type: 'div',
-                        props: {
-                          style: {
-                            display: 'flex', backgroundColor: theme.weekPillBg, color: theme.textPrimary,
-                            fontSize: '22px', fontWeight: 600, padding: '10px 24px', borderRadius: '999px',
-                          },
-                          children: data.week
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: { display: 'flex', flexDirection: 'column', flex: 1, marginTop: '40px' },
-                    children: [highlightsGrid(theme, data.highlights)]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
+    box({ width: `${theme.width}px`, height: `${theme.height}px`, background: theme.background, fontFamily: theme.fontFamily }, [
+      box({ flexDirection: 'column', width: '100%', height: '100%', padding: '52px 56px' }, [
+        header(theme, data, title, subtitle),
+        box({ flexDirection: 'row', gap: '24px', marginTop: '34px' }, [
+          column(theme, SHIPPED_ACCENT, '🚀', 'Shipped this week', data.shipped, columnHeight),
+          column(theme, LEARNED_ACCENT, '📚', 'Learned', data.learned, columnHeight),
+        ]),
+        box({ width: '100%', marginTop: '24px' }, [statsBar(theme, data)])
+      ])
+    ]),
     { width: theme.width, height: theme.height, fonts, loadAdditionalAsset }
   )
 

@@ -6,7 +6,7 @@ on:
     - cron: '0 8 * * 3'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate-weekly-post:
@@ -29,6 +29,7 @@ jobs:
         run: npm run build
 
       - name: Run weekly flow
+        id: weekly
         run: npm run weekly
         env:
           GITHUB_USERNAME: ${{ vars.USERNAME }}
@@ -39,3 +40,14 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ vars.LINKEDIN_AUTHOR_URN }}
+
+      - name: Deploy dashboard to GitHub Pages
+        if: steps.weekly.outputs.published == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/card.png
+          git commit -m "chore: publish weekly changelog (run ${{ github.run_number }})" || { echo "Nothing to publish"; exit 0; }
+          git push

@@ -1,7 +1,9 @@
 import type { Activity } from '../../domain/Activity.js';
 import { isPushEvent, isCreateRepoEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
-import type { DashboardCreatedRepo, DashboardData, DashboardNote, DashboardRepo } from './DashboardData.js';
+import { computeMetrics } from '../../domain/computeMetrics.js';
+import { buildTimeline } from '../../domain/buildTimeline.js';
+import type { DashboardCreatedRepo, DashboardData, DashboardNote, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -9,6 +11,10 @@ function repoShortName(fullName: string): string {
 
 function formatGeneratedAt(date: Date): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
+
+function formatWhen(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 function parseCompareShas(diffUrl: string): { before: string; after: string } | null {
@@ -28,6 +34,8 @@ function combinedDiffUrl(fullName: string, pushes: PendingPush[]): string {
 interface PendingPush {
   diffUrl: string
   commits: string[]
+  additions: number
+  deletions: number
 }
 
 export interface BuildDashboardDataOptions {
@@ -48,7 +56,9 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     }
     repoPushes.get(fullName)!.pushes.push({
       diffUrl: meta.diff,
-      commits: meta.commitMessages.map(commit => (commit.message.split('\n')[0] ?? commit.message).trim())
+      commits: meta.commitMessages.map(commit => (commit.message.split('\n')[0] ?? commit.message).trim()),
+      additions: meta.additions,
+      deletions: meta.deletions,
     });
   }
 
@@ -65,6 +75,8 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
         totalCommits: pushes.reduce((sum, push) => sum + push.commits.length, 0),
         diffUrl: combinedDiffUrl(fullName, pushes),
         commits: pushes.flatMap(push => push.commits),
+        additions: pushes.reduce((sum, push) => sum + push.additions, 0),
+        deletions: pushes.reduce((sum, push) => sum + push.deletions, 0),
         ...(evaluation ? { evaluation } : {})
       }
     })
@@ -85,15 +97,25 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     .map(meta => ({
       emoji: meta.entry_emoji || '📝',
       title: meta.title,
+      tags: meta.tags,
       sources: meta.sources
     }));
+
+  const timeline: DashboardTimelineEvent[] = buildTimeline(activities).map(event => ({
+    type: event.type,
+    when: formatWhen(event.occurredAt),
+    title: event.title,
+    meta: event.meta,
+  }));
 
   return {
     week: options.week,
     generatedAt: formatGeneratedAt(new Date()),
+    timeline,
     repos,
     createdRepos,
     notes,
-    ...(options.digest ? { digest: options.digest } : {})
+    metrics: computeMetrics(activities),
+    ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary, highlights: options.digest.highlights } } : {})
   }
 }

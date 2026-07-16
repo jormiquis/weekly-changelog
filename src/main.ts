@@ -1,5 +1,5 @@
 import { Octokit } from "octokit";
-import { writeFileSync } from "fs";
+import { writeFileSync, appendFileSync } from "fs";
 import { GithubSourceRetriever } from "./infra/github/GithubSourceRetriever.js";
 import { NotionSourceRetriever } from "./infra/notion/NotionSourceRetriever.js";
 import { Client } from "@notionhq/client";
@@ -18,9 +18,23 @@ import { MistralSourceSynthesizer } from "./infra/mistral/MistralSourceSynthesiz
 import { FallbackSourceSynthesizer } from "./domain/FallbackSourceSynthesizer.js";
 import type { SourceSynthesizer } from "./domain/SourceSynthesizer.js";
 import type { SynthesizedDigest } from "./domain/SynthesizedDigest.js";
+import { buildPost } from "./ui/post/buildPost.js";
+import { LinkedInSender } from "./infra/linkedin/LinkedInSender.js";
+import type { Sender } from "./domain/Sender.js";
 
 const today = new Date();
 const weekLabel = `Week of ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+function isoWeekVersion(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86_400_000) + 1) / 7);
+  return `v${d.getUTCFullYear()}.W${String(week).padStart(2, '0')}`;
+}
+
+const version = isoWeekVersion(today);
 
 const userName = process.env.GITHUB_USERNAME || '';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
@@ -50,7 +64,7 @@ try {
   console.log('AI digest unavailable, continuing without it:', error);
 }
 
-const cardData = buildCardData(activities, { week: weekLabel });
+const cardData = buildCardData(activities, { week: weekLabel, version });
 const png = await renderCard(cardData);
 
 writeFileSync('docs/card.png', png);
@@ -76,6 +90,28 @@ const approved = await checker.sendForApproval(
 
 if (approved) {
   console.log('approved ✅ — publishing...');
+
+  // Signal the CI workflow to deploy the freshly generated docs/ to GitHub Pages.
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, 'published=true\n');
+
+  const post = buildPost({
+    week: weekLabel,
+    dashboardUrl,
+    imagePath: 'docs/card.png',
+    ...(digest ? { digest } : {})
+  });
+
+  const sender: Sender = new LinkedInSender(
+    process.env.LINKEDIN_ACCESS_TOKEN!,
+    process.env.LINKEDIN_AUTHOR_URN!
+  );
+
+  try {
+    await sender.publish(post);
+    console.log('Published to LinkedIn ✅');
+  } catch (error) {
+    console.log('LinkedIn publish failed:', error);
+  }
 } else {
   console.log('rejected ❌ — not published');
 }
