@@ -1,5 +1,8 @@
 import type { Checker } from '../../domain/Checker.js';
 
+const APPROVE = new Set(['yes', 'y', 'ok', '👍']);
+const REJECT = new Set(['no', 'nope', 'n', '👎']);
+
  export class TelegramCheker implements Checker {
   constructor(
     private readonly botToken: string,
@@ -13,7 +16,7 @@ import type { Checker } from '../../domain/Checker.js';
 
     form.append('chat_id', this.chatId);
     form.append('photo', new Blob([imageBuffer]), 'card.png');
-    form.append('caption', caption + '\n\nAnswer YES to publish o NOPE to reject');
+    form.append('caption', caption + '\n\nAnswer YES to publish or NO to reject');
 
     await fetch(`https://api.telegram.org/bot${this.botToken}/sendPhoto`, {
       method: 'POST',
@@ -37,8 +40,8 @@ import type { Checker } from '../../domain/Checker.js';
       if (lastMessage?.chat?.id === Number(this.chatId)) {
         const text = lastMessage.text?.trim().toLowerCase()
 
-        if (text === 'yes') return true;
-        if (text === 'no') return false;
+        if (text && APPROVE.has(text)) return true;
+        if (text && REJECT.has(text)) return false;
       }
 
       await new Promise(resolve => setTimeout(resolve, 5000))

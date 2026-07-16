@@ -61,6 +61,13 @@ describe('TelegramCheker', () => {
     await expect(checker.sendForApproval(imagePath, caption)).resolves.toBe(false);
   });
 
+  it('accepts common reject synonyms like "nope" without waiting for the timeout', async () => {
+    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, text: 'Nope' } }] }]);
+    const checker = new TelegramCheker('bot-token', '123');
+
+    await expect(checker.sendForApproval(imagePath, caption)).resolves.toBe(false);
+  });
+
   it('ignores replies from a different chat and keeps polling', async () => {
     const fetchMock = stubTelegramFetch([
       { result: [{ message: { chat: { id: 999 }, text: 'yes' } }] },
