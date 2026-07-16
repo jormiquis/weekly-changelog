@@ -95,15 +95,16 @@ if (approved) {
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, 'published=true\n');
 
   const post = buildPost({
-    week: weekLabel,
+    version,
     dashboardUrl,
     imagePath: 'docs/card.png',
-    ...(digest ? { digest } : {})
+    activities
   });
 
   const sender: Sender = new LinkedInSender(
     process.env.LINKEDIN_ACCESS_TOKEN!,
-    process.env.LINKEDIN_AUTHOR_URN!
+    process.env.LINKEDIN_AUTHOR_URN!,
+    process.env.LINKEDIN_VERSION || undefined
   );
 
   try {

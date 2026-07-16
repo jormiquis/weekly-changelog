@@ -17,7 +17,7 @@ Designed to run entirely on **free tiers** — no paid API calls, ever.
 | Social card | `docs/card.png` | 1200×760 product-changelog PNG for LinkedIn/X — **Shipped** bullets (from feat/fix/refactor commits), **Learned** bullets (Notion notes), and a raw-stats bar (commits · notes · lines changed · repos). Deterministic, **no AI**. |
 | Dashboard | `docs/index.html` | Responsive light/dark page — evidence-backed AI highlights, a **metrics** panel, a **weekly timeline**, raw commits grouped by repo with diff stats, new repos, and detailed learnings. Served via GitHub Pages. |
 | Approval | Telegram message | The card is sent to your chat; reply `yes` to approve or `no` to reject before publishing. |
-| LinkedIn post | On approval | The card is posted natively with a hook + hashtags; the dashboard link goes in the first comment (LinkedIn algorithm best practice). |
+| LinkedIn post | On approval | The card is posted natively with a **deterministic, no-AI caption** — raw counts (commits across repos, new repos, notes taken), the dashboard link, and hashtags. |
 
 ---
 
@@ -122,8 +122,7 @@ sequenceDiagram
     Main->>TG: send card for approval
     TG-->>Main: reply "yes" / "no"
     alt approved
-        Main->>LI: upload card + create post (hook, no link)
-        Main->>LI: dashboard link as first comment
+        Main->>LI: upload card + create post (counts + dashboard link + hashtags)
     else rejected
         Note over Main: skip publishing
     end
@@ -245,7 +244,7 @@ Every moving part is chosen to stay within a permanent free tier — not a trial
 | **Mistral (primary)** | Free tier, no card required; EU provider (no region block). One call/week. |
 | **Groq (fallback)** | Generous free tier, no card required. Only called if Mistral fails. |
 | **Telegram Bot API** | Free. |
-| **LinkedIn Posts API** | Free (one post + one comment per approved week). |
+| **LinkedIn Posts API** | Free (one post per approved week). |
 | **Rendering (satori + resvg)** | Runs locally on the runner — no external service. |
 
 **Cost guardrails already in the code:**

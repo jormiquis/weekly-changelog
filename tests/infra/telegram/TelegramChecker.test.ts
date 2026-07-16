@@ -8,6 +8,9 @@ describe('TelegramCheker', () => {
   const dashboardUrl = 'https://jormiquis.github.io/weekly-changelog/';
   const caption = `Weekly Changelog - Week of Jul 15\n\n${dashboardUrl}\n\n¿Publicar?`;
 
+  const FRESH = 4_102_444_800; // year 2100 — always after the card was sent
+  const STALE = 1;             // 1970 — a message left over from a previous run
+
   beforeEach(() => {
     writeFileSync(imagePath, Buffer.from('fake-png-bytes'));
   });
@@ -32,7 +35,7 @@ describe('TelegramCheker', () => {
   }
 
   it('sends the card with the dashboard link and asks for a yes/no reply', async () => {
-    const fetchMock = stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, text: 'yes' } }] }]);
+    const fetchMock = stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'yes' } }] }]);
 
     const checker: Checker = new TelegramCheker('bot-token', '123');
     await checker.sendForApproval(imagePath, caption);
@@ -48,30 +51,47 @@ describe('TelegramCheker', () => {
   });
 
   it('resolves true when the chat replies "yes"', async () => {
-    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, text: 'yes' } }] }]);
+    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'yes' } }] }]);
     const checker = new TelegramCheker('bot-token', '123');
 
     await expect(checker.sendForApproval(imagePath, caption)).resolves.toBe(true);
   });
 
   it('resolves false when the chat replies "no"', async () => {
-    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, text: 'no' } }] }]);
+    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'no' } }] }]);
     const checker = new TelegramCheker('bot-token', '123');
 
     await expect(checker.sendForApproval(imagePath, caption)).resolves.toBe(false);
   });
 
   it('accepts common reject synonyms like "nope" without waiting for the timeout', async () => {
-    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, text: 'Nope' } }] }]);
+    stubTelegramFetch([{ result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'Nope' } }] }]);
     const checker = new TelegramCheker('bot-token', '123');
 
     await expect(checker.sendForApproval(imagePath, caption)).resolves.toBe(false);
   });
 
+  it('ignores a stale reply left in the chat before the card was sent', async () => {
+    const fetchMock = stubTelegramFetch([
+      { result: [{ message: { chat: { id: 123 }, date: STALE, text: 'nope' } }] },
+      { result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'yes' } }] }
+    ]);
+    vi.useFakeTimers();
+
+    const checker = new TelegramCheker('bot-token', '123');
+    const resultPromise = checker.sendForApproval(imagePath, caption);
+
+    // First poll sees the leftover "nope" (old date) and must NOT reject.
+    await vi.advanceTimersByTimeAsync(5000);
+
+    await expect(resultPromise).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it('ignores replies from a different chat and keeps polling', async () => {
     const fetchMock = stubTelegramFetch([
-      { result: [{ message: { chat: { id: 999 }, text: 'yes' } }] },
-      { result: [{ message: { chat: { id: 123 }, text: 'yes' } }] }
+      { result: [{ message: { chat: { id: 999 }, date: FRESH, text: 'yes' } }] },
+      { result: [{ message: { chat: { id: 123 }, date: FRESH, text: 'yes' } }] }
     ]);
     vi.useFakeTimers();
 

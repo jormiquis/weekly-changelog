@@ -10,7 +10,7 @@ describe('LinkedInSender', () => {
   const link = 'https://jormiquis.github.io/weekly-changelog/';
 
   const post: Post = {
-    text: '🚀 AI digest pipeline shipped\n\nSummary.\n\nFull weekly breakdown 👇 (link in the comments)\n\n#BuildInPublic',
+    text: `🚀 AI digest pipeline shipped\n\nSummary.\n\nFull weekly breakdown 👇\n${link}\n\n#BuildInPublic`,
     imagePath,
     link
   };
@@ -35,14 +35,11 @@ describe('LinkedInSender', () => {
       if (url.endsWith('/rest/posts')) {
         return { ok: true, headers: new Headers({ 'x-restli-id': 'urn:li:share:POST1' }) };
       }
-      if (url.includes('/rest/socialActions/')) {
-        return { ok: true };
-      }
       throw new Error(`unexpected url ${url} ${options?.method}`);
     });
   }
 
-  it('uploads the card, creates the post with the image, and puts the link in the first comment', async () => {
+  it('uploads the card and creates the post with the image and the link-bearing body', async () => {
     const fetchMock = stubLinkedInFetch();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -50,7 +47,7 @@ describe('LinkedInSender', () => {
     await sender.publish(post);
 
     const calls = fetchMock.mock.calls;
-    expect(calls).toHaveLength(4);
+    expect(calls).toHaveLength(3);
 
     // 1) initialize upload with the author as owner
     expect(calls[0]![0]).toContain('/rest/images?action=initializeUpload');
@@ -60,20 +57,16 @@ describe('LinkedInSender', () => {
     expect(calls[1]![0]).toBe('https://upload.linkedin.com/xyz');
     expect(calls[1]![1].method).toBe('PUT');
 
-    // 3) post created with the returned image URN and the hook text (no link)
+    // 3) post created with the returned image URN and the full body (link included)
     expect(calls[2]![0]).toContain('/rest/posts');
     const postBody = JSON.parse(calls[2]![1].body);
     expect(postBody.content.media.id).toBe('urn:li:image:IMG1');
     expect(postBody.commentary).toBe(post.text);
-    expect(postBody.commentary).not.toContain(link);
+    expect(postBody.commentary).toContain(link);
     expect(postBody.visibility).toBe('PUBLIC');
 
-    // 4) link posted as the first comment on the created post
-    expect(calls[3]![0]).toContain('/rest/socialActions/');
-    expect(calls[3]![0]).toContain(encodeURIComponent('urn:li:share:POST1'));
-    const commentBody = JSON.parse(calls[3]![1].body);
-    expect(commentBody.actor).toBe(authorUrn);
-    expect(commentBody.message.text).toContain(link);
+    // No comment call — member tokens can't comment via the API.
+    expect(calls.some(([url]) => String(url).includes('/rest/socialActions/'))).toBe(false);
   });
 
   it('sends the versioned LinkedIn API headers on the create-post call', async () => {

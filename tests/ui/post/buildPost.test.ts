@@ -1,59 +1,71 @@
 import { describe, it, expect } from 'vitest';
-import type { SynthesizedDigest } from '../../../src/domain/SynthesizedDigest.js';
+import { Activity } from '../../../src/domain/Activity.js';
 import { buildPost } from '../../../src/ui/post/buildPost.js';
 
 const dashboardUrl = 'https://jormiquis.github.io/weekly-changelog/';
 
-const digest: SynthesizedDigest = {
-  headline: 'AI digest pipeline shipped',
-  summary: 'A resilient synthesis layer with automatic provider fallback landed this week.',
-  highlights: [
-    { text: 'Mistral + Groq fallback', evidence: [] },
-    { text: 'Simplified card', evidence: [] },
-    { text: 'Per-repo evaluation', evidence: [] },
-    { text: 'A fourth one', evidence: [] },
-  ],
-  commitEvaluations: []
-};
+function push(repo: string, commits: number) {
+  return Activity.create(new Date(), {
+    type: 'PushEvent',
+    repo: { name: `jormiquis/${repo}` },
+    diff: 'https://diff',
+    commitMessages: Array.from({ length: commits }, (_, i) => ({ message: `c${i}` })),
+    additions: 0,
+    deletions: 0,
+    files: [],
+  });
+}
 
-describe('buildPost (LinkedIn best practices)', () => {
-  it('uses the digest headline as the hook on the very first line', () => {
-    const post = buildPost({ week: 'Week of Jul 15', dashboardUrl, imagePath: 'docs/card.png', digest });
+function note(title: string) {
+  return Activity.create(new Date(), { source: 'notion', entry_emoji: '📝', tags: [], sources: [], title });
+}
 
-    expect(post.text.split('\n')[0]).toBe('🚀 AI digest pipeline shipped');
+const base = { version: 'v2026.W29', dashboardUrl, imagePath: 'docs/card.png' };
+
+describe('buildPost (deterministic, no AI)', () => {
+  it('states raw counts of commits across repos and notes taken', () => {
+    const post = buildPost({ ...base, activities: [push('weekly-changelog', 5), push('api', 3), note('a'), note('b')] });
+
+    expect(post.text).toContain('📋 Weekly Changelog — v2026.W29');
+    expect(post.text).toContain('8 commits across 2 repos (weekly-changelog, api)');
+    expect(post.text).toContain('2 notes taken');
   });
 
-  it('never puts the outbound link in the body — it travels in Post.link for the first comment', () => {
-    const post = buildPost({ week: 'Week of Jul 15', dashboardUrl, imagePath: 'docs/card.png', digest });
+  it('never contains AI-style prose, only the facts, link and hashtags', () => {
+    const post = buildPost({ ...base, activities: [push('weekly-changelog', 1), note('a')] });
 
-    expect(post.text).not.toContain('http');
-    expect(post.text).not.toContain(dashboardUrl);
+    expect(post.text).toContain(dashboardUrl);
     expect(post.link).toBe(dashboardUrl);
-    expect(post.text.toLowerCase()).toContain('link in the comments');
-  });
-
-  it('includes the card as the native image and a small set of hashtags', () => {
-    const post = buildPost({ week: 'Week of Jul 15', dashboardUrl, imagePath: 'docs/card.png', digest });
-
-    expect(post.imagePath).toBe('docs/card.png');
     expect(post.text).toContain('#BuildInPublic');
-    expect(post.text).toContain('#SoftwareEngineering');
+    expect(post.imagePath).toBe('docs/card.png');
+    // the link sits before the hashtags
+    expect(post.text.indexOf(dashboardUrl)).toBeLessThan(post.text.indexOf('#BuildInPublic'));
   });
 
-  it('caps the highlights shown in the body to keep the post scannable', () => {
-    const post = buildPost({ week: 'Week of Jul 15', dashboardUrl, imagePath: 'docs/card.png', digest });
+  it('pluralizes singular counts correctly', () => {
+    const post = buildPost({ ...base, activities: [push('solo', 1), note('one')] });
 
-    const bullets = post.text.split('\n').filter(line => line.startsWith('↳'));
-    expect(bullets).toHaveLength(3);
-    expect(bullets).not.toContain('↳ A fourth one');
+    expect(post.text).toContain('1 commit across 1 repo (solo)');
+    expect(post.text).toContain('1 note taken');
   });
 
-  it('falls back to a week-based hook when no digest is available', () => {
-    const post = buildPost({ week: 'Week of Jul 15', dashboardUrl, imagePath: 'docs/card.png' });
+  it('counts newly created repos', () => {
+    const activities = [Activity.create(new Date(), { source: 'github', type: 'CreateEvent', entityCreated: 'repository', repo: 'jormiquis/new', description: 'd' })];
+    const post = buildPost({ ...base, activities });
 
-    expect(post.text.split('\n')[0]).toBe('🚀 Weekly Changelog — Week of Jul 15');
-    expect(post.text).not.toContain('http');
-    expect(post.link).toBe(dashboardUrl);
-    expect(post.text).toContain('#WeeklyChangelog');
+    expect(post.text).toContain('1 new repo created');
+  });
+
+  it('falls back to a quiet-week line when there is no activity', () => {
+    const post = buildPost({ ...base, activities: [] });
+
+    expect(post.text).toContain('A quiet week — no public activity recorded.');
+    expect(post.text).toContain(dashboardUrl);
+  });
+
+  it('caps the repo names listed and shows a "+N more"', () => {
+    const post = buildPost({ ...base, activities: [push('a', 1), push('b', 1), push('c', 1), push('d', 1), push('e', 1), push('f', 1)] });
+
+    expect(post.text).toContain('(a, b, c, d +2 more)');
   });
 });

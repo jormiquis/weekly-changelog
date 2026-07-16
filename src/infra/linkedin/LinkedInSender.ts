@@ -3,7 +3,8 @@ import type { Post } from '../../domain/Post.js';
 import type { Sender } from '../../domain/Sender.js';
 
 const API_BASE = 'https://api.linkedin.com'
-const DEFAULT_VERSION = '202405'
+// LinkedIn only keeps ~12 monthly versions active; override via LINKEDIN_VERSION when this ages out.
+const DEFAULT_VERSION = '202606'
 
 /**
  * Publishes to LinkedIn via the versioned Posts API.
@@ -26,8 +27,9 @@ export class LinkedInSender implements Sender {
 
   async publish(post: Post): Promise<void> {
     const imageUrn = await this.uploadImage(post.imagePath)
-    const postUrn = await this.createPost(post.text, imageUrn)
-    await this.commentLink(postUrn, post.link)
+    // The dashboard link is part of the post body: member tokens can't comment via
+    // the API (403), so the "link in first comment" tactic isn't available here.
+    await this.createPost(post.text, imageUrn)
   }
 
   private headers(extra: Record<string, string> = {}): Record<string, string> {
@@ -67,7 +69,7 @@ export class LinkedInSender implements Sender {
     return imageUrn
   }
 
-  private async createPost(text: string, imageUrn: string): Promise<string> {
+  private async createPost(text: string, imageUrn: string): Promise<void> {
     const response = await fetch(`${API_BASE}/rest/posts`, {
       method: 'POST',
       headers: this.headers({ 'Content-Type': 'application/json' }),
@@ -87,23 +89,5 @@ export class LinkedInSender implements Sender {
     })
 
     if (!response.ok) throw new Error(`LinkedIn post creation failed with status ${response.status}`)
-
-    const postUrn = response.headers.get('x-restli-id') ?? response.headers.get('x-linkedin-id')
-    if (!postUrn) throw new Error('LinkedIn post creation response missing post URN header')
-
-    return postUrn
-  }
-
-  private async commentLink(postUrn: string, link: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/rest/socialActions/${encodeURIComponent(postUrn)}/comments`, {
-      method: 'POST',
-      headers: this.headers({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({
-        actor: this.authorUrn,
-        message: { text: `Full weekly dashboard: ${link}` }
-      })
-    })
-
-    if (!response.ok) throw new Error(`LinkedIn comment failed with status ${response.status}`)
   }
 }

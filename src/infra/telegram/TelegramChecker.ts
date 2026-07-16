@@ -18,15 +18,19 @@ const REJECT = new Set(['no', 'nope', 'n', '👎']);
     form.append('photo', new Blob([imageBuffer]), 'card.png');
     form.append('caption', caption + '\n\nAnswer YES to publish or NO to reject');
 
+    // Only replies that arrive after this instant count — never a stale message
+    // left in the chat from a previous run.
+    const sentAt = Math.floor(Date.now() / 1000);
+
     await fetch(`https://api.telegram.org/bot${this.botToken}/sendPhoto`, {
       method: 'POST',
       body: form
     })
 
-    return this.waitForResponse()
+    return this.waitForResponse(sentAt)
   }
 
-  private async waitForResponse(): Promise<boolean> {
+  private async waitForResponse(sentAt: number): Promise<boolean> {
     const timeout = 30 * 60 * 1000;
     const start = Date.now();
 
@@ -37,7 +41,7 @@ const REJECT = new Set(['no', 'nope', 'n', '👎']);
       const data = await response.json()
 
       const lastMessage = data.result?.[0]?.message
-      if (lastMessage?.chat?.id === Number(this.chatId)) {
+      if (lastMessage?.chat?.id === Number(this.chatId) && (lastMessage.date ?? 0) >= sentAt) {
         const text = lastMessage.text?.trim().toLowerCase()
 
         if (text && APPROVE.has(text)) return true;

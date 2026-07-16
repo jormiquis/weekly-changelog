@@ -5,3 +5,4 @@ vitest.config.ts
 vitest.config.d.ts
 /dist
 .env
+/src/auth

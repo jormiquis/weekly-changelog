@@ -1,54 +1,61 @@
+import type { Activity } from '../../domain/Activity.js';
+import { isPushEvent } from '../../domain/ActivityMeta.js';
+import { computeMetrics } from '../../domain/computeMetrics.js';
 import type { Post } from '../../domain/Post.js';
-import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 
 const HASHTAGS = '#BuildInPublic #SoftwareEngineering #DevCommunity #WeeklyChangelog'
-const MAX_HIGHLIGHTS = 3
+const MAX_REPO_NAMES = 4
 
 export interface BuildPostOptions {
-  week: string
+  version: string
   dashboardUrl: string
   imagePath: string
-  digest?: SynthesizedDigest
+  activities: Activity[]
+}
+
+function repoShortName(fullName: string): string {
+  return fullName.split('/').pop() ?? fullName
+}
+
+function repoNames(activities: Activity[]): string[] {
+  const names = new Set<string>();
+  for (const meta of activities.map(a => a.metaData).filter(isPushEvent)) {
+    names.add(repoShortName(meta.repo.name));
+  }
+  return [...names]
 }
 
 /**
- * Builds a LinkedIn-optimized post. Best practices applied:
- * - Hook on the first line (shown above the "see more" fold — the single biggest
- *   reach factor in the LinkedIn algorithm).
- * - No outbound link in the body: LinkedIn deprioritizes posts with external links,
- *   so the dashboard URL travels in `Post.link` and is placed in the first comment
- *   by the sender.
- * - Native image (the card), short scannable lines, and a small set of hashtags.
+ * Builds a deterministic LinkedIn post — no AI. It states the raw facts of the week
+ * (commits across repos, new repos, notes taken), the dashboard link, and hashtags.
  */
 export function buildPost(options: BuildPostOptions): Post {
-  const { week, dashboardUrl, imagePath, digest } = options
+  const { version, dashboardUrl, imagePath, activities } = options
+  const metrics = computeMetrics(activities)
 
-  const lines: string[] = []
+  const lines: string[] = [`📋 Weekly Changelog — ${version}`, '']
 
-  // 1) Hook first.
-  lines.push(digest ? `🚀 ${digest.headline}` : `🚀 Weekly Changelog — ${week}`)
-  lines.push('')
+  const facts: string[] = []
 
-  // 2) Body.
-  if (digest) {
-    lines.push(digest.summary)
-
-    const highlights = digest.highlights.slice(0, MAX_HIGHLIGHTS)
-    if (highlights.length > 0) {
-      lines.push('')
-      for (const highlight of highlights) lines.push(`↳ ${highlight.text}`)
-    }
-  } else {
-    lines.push("A fresh recap of this week's engineering activity.")
+  if (metrics.totalCommits > 0) {
+    const names = repoNames(activities)
+    const shown = names.slice(0, MAX_REPO_NAMES).join(', ')
+    const extra = names.length > MAX_REPO_NAMES ? ` +${names.length - MAX_REPO_NAMES} more` : ''
+    const where = names.length > 0 ? ` (${shown}${extra})` : ''
+    facts.push(`💻 ${metrics.totalCommits} commit${metrics.totalCommits === 1 ? '' : 's'} across ${metrics.repositories} repo${metrics.repositories === 1 ? '' : 's'}${where}`)
   }
 
-  // 3) Soft CTA pointing to the first comment (never the raw link in the body).
-  lines.push('')
-  lines.push('Full weekly breakdown 👇 (link in the comments)')
+  if (metrics.newRepos > 0) {
+    facts.push(`🆕 ${metrics.newRepos} new repo${metrics.newRepos === 1 ? '' : 's'} created`)
+  }
 
-  // 4) Hashtags.
-  lines.push('')
-  lines.push(HASHTAGS)
+  if (metrics.notesTaken > 0) {
+    facts.push(`📝 ${metrics.notesTaken} note${metrics.notesTaken === 1 ? '' : 's'} taken`)
+  }
+
+  lines.push(...(facts.length > 0 ? facts : ['A quiet week — no public activity recorded.']))
+
+  lines.push('', dashboardUrl, '', HASHTAGS)
 
   return { text: lines.join('\n'), imagePath, link: dashboardUrl }
 }
