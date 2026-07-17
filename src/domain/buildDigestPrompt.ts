@@ -21,27 +21,28 @@ function groupCommitsByRepo(activities: Activity[]): Map<string, string[]> {
   return commitsByRepo
 }
 
-function otherActivityLines(activities: Activity[]): string[] {
-  const lines: string[] = [];
+function noteTitles(activities: Activity[]): string[] {
+  return activities
+    .map(activity => activity.metaData)
+    .filter(isNotionEntry)
+    .map(note => note.title)
+}
 
-  for (const activity of activities) {
-    const meta = activity.metaData;
-
-    if (isCreateRepoEvent(meta)) {
-      lines.push(`New repository ${repoShortName(meta.repo)}${meta.description ? ` — ${meta.description}` : ''}`);
-    } else if (isNotionEntry(meta)) {
-      lines.push(`Note captured: "${meta.title}"${meta.tags.length > 0 ? ` (tags: ${meta.tags.join(', ')})` : ''}`);
-    }
-  }
-
-  return lines
+function createdRepoLines(activities: Activity[]): string[] {
+  return activities
+    .map(activity => activity.metaData)
+    .filter(isCreateRepoEvent)
+    .map(meta => `New repository ${repoShortName(meta.repo)}${meta.description ? ` — ${meta.description}` : ''}`)
 }
 
 export function buildDigestPrompt(activities: Activity[], week: string): string {
   const commitsByRepo = groupCommitsByRepo(activities);
-  const repoLines = [...commitsByRepo.entries()].map(([repo, messages]) => `${repo}: ${messages.length} commit(s) — ${messages.join('; ')}`);
-  const activityLines = [...repoLines, ...otherActivityLines(activities)];
   const repoNames = [...commitsByRepo.keys()];
+  const titles = noteTitles(activities);
+
+  const repoLines = [...commitsByRepo.entries()].map(([repo, messages]) => `${repo}: ${messages.length} commit(s) — ${messages.join('; ')}`);
+  const noteLines = titles.map(title => `Note: "${title}"`);
+  const activityLines = [...repoLines, ...createdRepoLines(activities), ...noteLines];
 
   return [
     `Write a short, impersonal weekly engineering changelog digest for ${week}.`,
@@ -49,19 +50,21 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     activityLines.length > 0 ? activityLines.map(line => `- ${line}`).join('\n') : '- No activity recorded this week.',
     '',
     'Respond with ONLY strict JSON (no markdown fences, no commentary) matching exactly this shape:',
-    '{"headline": string, "summary": string, "highlights": [{"text": string, "evidence": string[]}], "commitEvaluations": [{"repo": string, "evaluation": string}]}',
+    '{"headline": string, "summary": string, "repos": [{"repo": string, "summary": string}], "notes": [{"title": string, "summary": string}]}',
     '',
-    'Tone constraints, apply to every field (headline, summary, highlight text, evaluation):',
+    'Tone constraints, apply to every field (headline, summary, repo summary, note summary):',
     '- Impersonal. Use nominal phrases or neutral/passive constructions.',
     '- Never use "you", "I", "we", or any first/second person pronoun or verb conjugated for a person (no "worked on", "shipped", "you added").',
     '- Prefer nouns over personal verbs where natural, e.g. "Refactor of the notifier" instead of "Refactored the notifier" or "You refactored the notifier".',
     '',
     'Field constraints:',
     '- headline: max 70 characters, punchy, no trailing period.',
-    '- summary: 1-2 sentences.',
-    '- highlights: 2 to 4 items. Each "text" is a short noun phrase (max 8 words), no leading dashes or bullets. Each "evidence" is 1 to 3 items copied VERBATIM from the raw activity log above (exact commit messages or note titles) that justify the highlight — never invent evidence.',
+    '- summary: 1-2 sentences giving an overall picture of the week.',
     repoNames.length > 0
-      ? `- commitEvaluations: exactly one entry per repository listed above with commits (${repoNames.join(', ')}). Each evaluation is 1 sentence (max 25 words) assessing what the commits accomplish for that repository — the actual change, not who made it.`
-      : '- commitEvaluations: empty array, since no repository had commits this week.'
+      ? `- repos: exactly one entry per repository listed above with commits (${repoNames.join(', ')}). "repo" is the repository name copied VERBATIM, and "summary" is 1 sentence (max 25 words) assessing what the commits accomplished for that repository — the actual change, not who made it.`
+      : '- repos: empty array, since no repository had commits this week.',
+    titles.length > 0
+      ? `- notes: exactly one entry per note listed above (${titles.length} note(s)). "title" is the note title copied VERBATIM, and "summary" is 1 sentence (max 25 words) summarizing what the note is about.`
+      : '- notes: empty array, since no notes were captured this week.'
   ].join('\n')
 }

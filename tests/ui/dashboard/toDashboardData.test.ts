@@ -18,30 +18,40 @@ function push(repo: string, messages: string[], additions: number, deletions: nu
 const digest: SynthesizedDigest = {
   headline: 'A focused week on the changelog',
   summary: 'Steady progress shipping the AI digest feature end to end.',
-  highlights: [{ text: 'Digest feature shipped', evidence: ['feat: ship it'] }],
-  commitEvaluations: [{ repo: 'weekly-changelog', evaluation: 'Ships the AI digest end to end.' }],
+  repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest end to end.' }],
+  notes: [{ title: 'Ports & adapters', summary: 'Boundaries between domain and infra.' }],
 };
 
 describe('buildDashboardData', () => {
   const activities = [push('weekly-changelog', ['feat: ship it'], 120, 30)];
 
-  it('exposes the digest hero as headline, summary and evidence-backed highlights', () => {
+  it('exposes the digest hero as headline and summary', () => {
     const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
 
     expect(dashboard.digest).toEqual({
       headline: digest.headline,
       summary: digest.summary,
-      highlights: [{ text: 'Digest feature shipped', evidence: ['feat: ship it'] }],
     });
   });
 
-  it('attaches the matching commit evaluation and diff stats to its repo', () => {
+  it('attaches the matching per-repo summary and diff stats to its repo', () => {
     const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
 
     const repo = dashboard.repos[0]!;
     expect(repo.evaluation).toBe('Ships the AI digest end to end.');
     expect(repo.additions).toBe(120);
     expect(repo.deletions).toBe(30);
+  });
+
+  it('attaches the matching per-note summary to its note', () => {
+    const withNote = [
+      ...activities,
+      Activity.create(new Date(), { source: 'notion', entry_emoji: '📝', tags: [], sources: [], title: 'Ports & adapters' }),
+    ];
+
+    const dashboard = buildDashboardData(withNote, { week: 'Week of Jul 15', digest });
+
+    expect(dashboard.notes[0]!.summary).toBe('Boundaries between domain and infra.');
   });
 
   it('builds a timeline and computes metrics from the activities', () => {

@@ -23,23 +23,11 @@ function pct(ratio: number): string {
 function digestSection(digest: DashboardData['digest']): string {
   if (!digest) return ''
 
-  const highlights = digest.highlights.map(highlight => {
-    const evidence = highlight.evidence.length > 0
-      ? `<ul class="evidence">${highlight.evidence.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
-      : ''
-    return `
-      <li class="highlight">
-        <p class="highlight-text">${escapeHtml(highlight.text)}</p>
-        ${evidence}
-      </li>`
-  }).join('')
-
   return `
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
       <h2 class="digest-headline">${escapeHtml(digest.headline)}</h2>
       <p class="digest-summary">${escapeHtml(digest.summary)}</p>
-      <ul class="highlights">${highlights}</ul>
     </section>`
 }
 
@@ -190,6 +178,7 @@ function notesSection(notes: DashboardData['notes']): string {
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">${escapeHtml(note.emoji)}</span>${escapeHtml(note.title)}</span>
         </header>
+        ${note.summary ? `<p class="repo-evaluation"><span class="ai-badge">AI</span>${escapeHtml(note.summary)}</p>` : ''}
         ${tags}
         ${sources ? `<div class="sources"><span class="sources-label">Sources</span>${sources}</div>` : ''}
       </article>`
@@ -341,12 +330,7 @@ export function renderDashboard(data: DashboardData): string {
     }
     .digest-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
     .digest-headline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; color: var(--text-primary); margin: 0 0 10px; }
-    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 16px; }
-    .highlights { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 12px; }
-    .highlight { background: var(--tag-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-    .highlight-text { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0 0 8px; }
-    .evidence { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-    .evidence li { font-size: 12.5px; line-height: 1.45; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border); word-break: break-word; }
+    .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
 
     .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; }
 

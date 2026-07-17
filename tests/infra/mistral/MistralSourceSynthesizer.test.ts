@@ -14,7 +14,7 @@ describe('MistralSourceSynthesizer', () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', highlights: [{ text: 'Feature shipped', evidence: ['feat: ship it'] }], commitEvaluations: [{ repo: 'weekly-changelog', evaluation: 'Ships the AI digest feature.' }] }) } }]
+        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] }) } }]
       })
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -22,7 +22,7 @@ describe('MistralSourceSynthesizer', () => {
     const synthesizer = new MistralSourceSynthesizer('mistral-key');
     const digest = await synthesizer.synthesize(activities, week);
 
-    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', highlights: [{ text: 'Feature shipped', evidence: ['feat: ship it'] }], commitEvaluations: [{ repo: 'weekly-changelog', evaluation: 'Ships the AI digest feature.' }] });
+    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] });
 
     const [url, options] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.mistral.ai/v1/chat/completions');

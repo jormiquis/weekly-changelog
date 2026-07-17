@@ -1,43 +1,35 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isPushEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
-import { classifyCommit } from '../../domain/commitType.js';
+import { isNotionEntry } from '../../domain/ActivityMeta.js';
 import { computeMetrics } from '../../domain/computeMetrics.js';
-import { areaFromFiles, describeWork, WORK_PRIORITY } from '../../domain/workCategory.js';
+import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { CardData } from './CardData.js';
 
 const MAX_SHIPPED = 5
 const MAX_LEARNED = 4
 
 /**
- * Generic, context-free "worked on" bullets — the kind of work, not the literal
- * commit message. Each commit is categorized by its type and the area it touched,
- * then de-duplicated and ranked so the card reads like a product changelog.
+ * "Shipped" bullets, one per repository, built from the AI digest. Each bullet
+ * reads "repo — what changed", so the card is grouped by repository.
  */
-function buildShipped(activities: Activity[]): string[] {
-  const bestPriority = new Map<string, number>();
+function buildShipped(digest?: SynthesizedDigest): string[] {
+  if (!digest) return []
 
-  for (const meta of activities.map(a => a.metaData).filter(isPushEvent)) {
-    const area = areaFromFiles(meta.files ?? []);
-
-    for (const commit of meta.commitMessages) {
-      const type = classifyCommit(commit.message);
-      const phrase = describeWork(type, area);
-      if (!phrase) continue;
-
-      const priority = WORK_PRIORITY[type];
-      if (!bestPriority.has(phrase) || priority < bestPriority.get(phrase)!) {
-        bestPriority.set(phrase, priority);
-      }
-    }
-  }
-
-  return [...bestPriority.entries()]
-    .sort((a, b) => a[1] - b[1])
-    .map(([phrase]) => phrase)
+  return digest.repos
+    .map(repo => `${repo.repo} — ${repo.summary}`)
     .slice(0, MAX_SHIPPED)
 }
 
-function buildLearned(activities: Activity[]): string[] {
+/**
+ * "Learned" bullets, one per note. Uses the AI per-note summary when available,
+ * otherwise falls back to the raw note titles so the card still renders offline.
+ */
+function buildLearned(activities: Activity[], digest?: SynthesizedDigest): string[] {
+  if (digest) {
+    return digest.notes
+      .map(note => `${note.title} — ${note.summary}`)
+      .slice(0, MAX_LEARNED)
+  }
+
   return activities
     .map(a => a.metaData)
     .filter(isNotionEntry)
@@ -48,6 +40,7 @@ function buildLearned(activities: Activity[]): string[] {
 export interface BuildCardDataOptions {
   week: string
   version?: string
+  digest?: SynthesizedDigest
 }
 
 export function buildCardData(activities: Activity[], options: BuildCardDataOptions): CardData {
@@ -56,8 +49,8 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
   return {
     week: options.week,
     version: options.version ?? options.week,
-    shipped: buildShipped(activities),
-    learned: buildLearned(activities),
+    shipped: buildShipped(options.digest),
+    learned: buildLearned(activities, options.digest),
     stats: {
       commits: metrics.totalCommits,
       notes: metrics.notesTaken,

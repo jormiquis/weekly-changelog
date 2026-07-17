@@ -30,17 +30,13 @@ export interface DashboardNote {
   title: string
   tags: string[]
   sources: string[]
-}
-
-export interface DashboardHighlight {
-  text: string
-  evidence: string[]
+  /** AI summary of the note, when a digest was produced. */
+  summary?: string
 }
 
 export interface DashboardDigest {
   headline: string
   summary: string
-  highlights: DashboardHighlight[]
 }
 
 export interface DashboardTimelineEvent {

@@ -62,12 +62,12 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     });
   }
 
-  const evaluationByRepo = new Map((options.digest?.commitEvaluations ?? []).map(({ repo, evaluation }) => [repo, evaluation]));
+  const summaryByRepo = new Map((options.digest?.repos ?? []).map(({ repo, summary }) => [repo, summary]));
 
   const repos: DashboardRepo[] = [...repoPushes.entries()]
     .map(([fullName, { url, pushes }]) => {
       const name = repoShortName(fullName);
-      const evaluation = evaluationByRepo.get(name);
+      const evaluation = summaryByRepo.get(name);
 
       return {
         name,
@@ -100,15 +100,22 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       from: meta.sourceRepo
     }));
 
+  const summaryByNote = new Map((options.digest?.notes ?? []).map(({ title, summary }) => [title, summary]));
+
   const notes: DashboardNote[] = activities
     .map(activity => activity.metaData)
     .filter(isNotionEntry)
-    .map(meta => ({
-      emoji: meta.entry_emoji || '📝',
-      title: meta.title,
-      tags: meta.tags,
-      sources: meta.sources
-    }));
+    .map(meta => {
+      const summary = summaryByNote.get(meta.title);
+
+      return {
+        emoji: meta.entry_emoji || '📝',
+        title: meta.title,
+        tags: meta.tags,
+        sources: meta.sources,
+        ...(summary ? { summary } : {})
+      }
+    });
 
   const timeline: DashboardTimelineEvent[] = buildTimeline(activities).map(event => ({
     type: event.type,
@@ -126,6 +133,6 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     forks,
     notes,
     metrics: computeMetrics(activities),
-    ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary, highlights: options.digest.highlights } } : {})
+    ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary } } : {})
   }
 }

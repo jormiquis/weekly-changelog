@@ -1,41 +1,46 @@
-export interface CommitEvaluation {
+export interface RepoSummary {
+  /** Short repository name, e.g. "weekly-changelog". */
   repo: string
-  evaluation: string
+  /** One-sentence AI summary of what the commits accomplished for that repo. */
+  summary: string
 }
 
-export interface Highlight {
-  text: string
-  /** Concrete commit messages / note titles the highlight is grounded in. */
-  evidence: string[]
+export interface NoteSummary {
+  /** Note title, copied verbatim so it can be matched back to the source note. */
+  title: string
+  /** One-sentence AI summary of what the note is about. */
+  summary: string
 }
 
 export interface SynthesizedDigest {
   headline: string
   summary: string
-  highlights: Highlight[]
-  commitEvaluations: CommitEvaluation[]
+  /** Per-repository summaries, one entry per repo that had commits this week. */
+  repos: RepoSummary[]
+  /** Per-note summaries, one entry per note captured this week. */
+  notes: NoteSummary[]
 }
 
-function isCommitEvaluation(value: unknown): value is CommitEvaluation {
+function isRepoSummary(value: unknown): value is RepoSummary {
   if (typeof value !== 'object' || value === null) return false
 
   const candidate = value as Record<string, unknown>
 
   return typeof candidate.repo === 'string'
     && candidate.repo.trim().length > 0
-    && typeof candidate.evaluation === 'string'
-    && candidate.evaluation.trim().length > 0
+    && typeof candidate.summary === 'string'
+    && candidate.summary.trim().length > 0
 }
 
-function isHighlight(value: unknown): value is Highlight {
+function isNoteSummary(value: unknown): value is NoteSummary {
   if (typeof value !== 'object' || value === null) return false
 
   const candidate = value as Record<string, unknown>
 
-  return typeof candidate.text === 'string'
-    && candidate.text.trim().length > 0
-    && Array.isArray(candidate.evidence)
-    && candidate.evidence.every(item => typeof item === 'string')
+  return typeof candidate.title === 'string'
+    && candidate.title.trim().length > 0
+    && typeof candidate.summary === 'string'
+    && candidate.summary.trim().length > 0
 }
 
 export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest {
@@ -47,8 +52,8 @@ export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest 
     && candidate.headline.trim().length > 0
     && typeof candidate.summary === 'string'
     && candidate.summary.trim().length > 0
-    && Array.isArray(candidate.highlights)
-    && candidate.highlights.every(isHighlight)
-    && Array.isArray(candidate.commitEvaluations)
-    && candidate.commitEvaluations.every(isCommitEvaluation)
+    && Array.isArray(candidate.repos)
+    && candidate.repos.every(isRepoSummary)
+    && Array.isArray(candidate.notes)
+    && candidate.notes.every(isNoteSummary)
 }

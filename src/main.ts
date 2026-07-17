@@ -65,7 +65,7 @@ try {
   console.log('AI digest unavailable, continuing without it:', error);
 }
 
-const cardData = buildCardData(activities, { week: weekLabel, version });
+const cardData = buildCardData(activities, { week: weekLabel, version, ...(digest ? { digest } : {}) });
 const png = await renderCard(cardData);
 
 writeFileSync('docs/card.png', png);
