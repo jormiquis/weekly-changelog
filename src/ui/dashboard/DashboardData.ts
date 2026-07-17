@@ -18,6 +18,13 @@ export interface DashboardCreatedRepo {
   description: string
 }
 
+export interface DashboardFork {
+  name: string
+  url: string
+  /** Upstream repo the fork was created from. */
+  from: string
+}
+
 export interface DashboardNote {
   emoji: string
   title: string
@@ -50,6 +57,7 @@ export interface DashboardData {
   timeline: DashboardTimelineEvent[]
   repos: DashboardRepo[]
   createdRepos: DashboardCreatedRepo[]
+  forks: DashboardFork[]
   notes: DashboardNote[]
   metrics: Metrics
   digest?: DashboardDigest

@@ -59,4 +59,17 @@ describe('buildDashboardData', () => {
     expect(dashboard.digest).toBeUndefined();
     expect(dashboard.repos[0]!.evaluation).toBeUndefined();
   });
+
+  it('surfaces fork events as their own dashboard section', () => {
+    const withFork = [
+      ...activities,
+      Activity.create(new Date(), { source: 'github', type: 'ForkEvent', sourceRepo: 'vercel/next.js', fork: 'jormiquis/next.js', forkUrl: 'https://github.com/jormiquis/next.js' }),
+    ];
+
+    const dashboard = buildDashboardData(withFork, { week: 'Week of Jul 15' });
+
+    expect(dashboard.forks).toEqual([
+      { name: 'next.js', url: 'https://github.com/jormiquis/next.js', from: 'vercel/next.js' },
+    ]);
+  });
 });

@@ -1,7 +1,7 @@
 import type { Activity } from './Activity.js';
-import { isPushEvent, isCreateRepoEvent, isNotionEntry } from './ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isNotionEntry } from './ActivityMeta.js';
 
-export type TimelineEventType = 'push' | 'repo' | 'note'
+export type TimelineEventType = 'push' | 'repo' | 'fork' | 'note'
 
 export interface TimelineEvent {
   type: TimelineEventType
@@ -40,6 +40,14 @@ export function buildTimeline(activities: Activity[]): TimelineEvent[] {
         title: `Created ${repoShortName(meta.repo)}`,
         meta: meta.description || 'New repository',
         repo: repoShortName(meta.repo),
+      });
+    } else if (isForkEvent(meta)) {
+      events.push({
+        type: 'fork',
+        occurredAt,
+        title: `Forked ${repoShortName(meta.sourceRepo)}`,
+        meta: `from ${meta.sourceRepo}`,
+        repo: repoShortName(meta.fork),
       });
     } else if (isNotionEntry(meta)) {
       events.push({

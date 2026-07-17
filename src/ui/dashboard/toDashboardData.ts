@@ -1,9 +1,9 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isPushEvent, isCreateRepoEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import { computeMetrics } from '../../domain/computeMetrics.js';
 import { buildTimeline } from '../../domain/buildTimeline.js';
-import type { DashboardCreatedRepo, DashboardData, DashboardNote, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
+import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -91,6 +91,15 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       description: meta.description
     }));
 
+  const forks: DashboardFork[] = activities
+    .map(activity => activity.metaData)
+    .filter(isForkEvent)
+    .map(meta => ({
+      name: repoShortName(meta.fork),
+      url: meta.forkUrl,
+      from: meta.sourceRepo
+    }));
+
   const notes: DashboardNote[] = activities
     .map(activity => activity.metaData)
     .filter(isNotionEntry)
@@ -114,6 +123,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     timeline,
     repos,
     createdRepos,
+    forks,
     notes,
     metrics: computeMetrics(activities),
     ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary, highlights: options.digest.highlights } } : {})

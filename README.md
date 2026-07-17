@@ -1,7 +1,7 @@
 # Weekly Changelog
 
 Automated weekly summary of your engineering activity. Every week it collects what
-you did across **GitHub** (commits, new repos) and **Notion** (notes), asks a
+you did across **GitHub** (commits, new repos, forks) and **Notion** (notes), asks a
 **free-tier LLM** to write an impersonal digest of the changes, renders a shareable
 **social card** (PNG) and a responsive **dashboard** (HTML), and sends the card to
 **Telegram** for you to approve before anything is published.
@@ -156,7 +156,7 @@ src/
 │   ├── Post.ts                 # Post payload (text + image + link)
 │   └── Sender.ts              # Port: publish an approved post
 ├── infra/                      # Adapters (one folder per provider)
-│   ├── github/                 # Retriever + push/create mappers
+│   ├── github/                 # Retriever + push/create/fork mappers
 │   ├── notion/                 # Retriever + note mapper
 │   ├── mistral/                # Primary LLM adapter
 │   ├── groq/                   # Fallback LLM adapter

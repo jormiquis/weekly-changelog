@@ -1,5 +1,5 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isPushEvent } from '../../domain/ActivityMeta.js';
+import { isPushEvent, isForkEvent } from '../../domain/ActivityMeta.js';
 import { computeMetrics } from '../../domain/computeMetrics.js';
 import type { Post } from '../../domain/Post.js';
 
@@ -47,6 +47,11 @@ export function buildPost(options: BuildPostOptions): Post {
 
   if (metrics.newRepos > 0) {
     facts.push(`🆕 ${metrics.newRepos} new repo${metrics.newRepos === 1 ? '' : 's'} created`)
+  }
+
+  const forkCount = activities.map(a => a.metaData).filter(isForkEvent).length
+  if (forkCount > 0) {
+    facts.push(`🍴 ${forkCount} repo${forkCount === 1 ? '' : 's'} forked`)
   }
 
   if (metrics.notesTaken > 0) {

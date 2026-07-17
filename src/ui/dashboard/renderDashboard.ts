@@ -14,7 +14,7 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//.test(value)
 }
 
-const TIMELINE_ICON = { push: '💻', repo: '🆕', note: '📝' } as const
+const TIMELINE_ICON = { push: '💻', repo: '🆕', fork: '🍴', note: '📝' } as const
 
 function pct(ratio: number): string {
   return `${Math.round(ratio * 100)}%`
@@ -155,6 +155,24 @@ function createdReposSection(createdRepos: DashboardData['createdRepos']): strin
     </section>`
 }
 
+function forksSection(forks: DashboardData['forks']): string {
+  if (forks.length === 0) return ''
+
+  const cards = forks.map(fork => `
+    <article class="entry-card accent-yellow">
+      <header class="entry-head">
+        <a class="entry-title" href="${escapeHtml(fork.url)}" target="_blank" rel="noopener"><span class="emoji">🍴</span>${escapeHtml(fork.name)}</a>
+      </header>
+      <p class="description">Forked from ${escapeHtml(fork.from)}</p>
+    </article>`).join('')
+
+  return `
+    <section class="dashboard-section">
+      <h2>Forks</h2>
+      <div class="entry-grid">${cards}</div>
+    </section>`
+}
+
 function notesSection(notes: DashboardData['notes']): string {
   if (notes.length === 0) return ''
 
@@ -185,7 +203,7 @@ function notesSection(notes: DashboardData['notes']): string {
 }
 
 export function renderDashboard(data: DashboardData): string {
-  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.notes.length > 0
+  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.notes.length > 0
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -360,6 +378,7 @@ export function renderDashboard(data: DashboardData): string {
     .timeline-meta { font-size: 13.5px; color: var(--text-secondary); margin: 4px 0 0; word-break: break-word; }
     .type-note .timeline-dot { border-color: var(--accent-magenta); }
     .type-repo .timeline-dot { border-color: var(--accent-green); }
+    .type-fork .timeline-dot { border-color: var(--accent-yellow); }
     .type-push .timeline-dot { border-color: var(--accent-blue); }
 
     /* Repo cards */
@@ -417,6 +436,7 @@ export function renderDashboard(data: DashboardData): string {
     ${timelineSection(data.timeline)}
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
+    ${forksSection(data.forks)}
     ${notesSection(data.notes)}
     ${!hasActivity ? '<p class="empty-state">No activity recorded this week.</p>' : ''}
   </div>

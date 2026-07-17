@@ -24,4 +24,16 @@ describe('buildTimeline', () => {
     expect(timeline[1]).toMatchObject({ type: 'repo', title: 'Created new' });
     expect(timeline[2]!.meta).toBe('2 commits · +40 −10');
   });
+
+  it('includes fork events with the upstream repo as metadata', () => {
+    const activities = [
+      Activity.create(new Date('2026-07-15T09:00:00Z'), {
+        source: 'github', type: 'ForkEvent', sourceRepo: 'vercel/next.js', fork: 'jormiquis/next.js', forkUrl: 'https://github.com/jormiquis/next.js',
+      }),
+    ];
+
+    const timeline = buildTimeline(activities);
+
+    expect(timeline[0]).toMatchObject({ type: 'fork', title: 'Forked next.js', meta: 'from vercel/next.js' });
+  });
 });

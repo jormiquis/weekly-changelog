@@ -3,6 +3,7 @@ import { Octokit } from 'octokit'
 import { GithubSourceRetriever } from "../../../src/infra/github/GithubSourceRetriever.js";
 import { GithubPushEventMapper } from "../../../src/infra/github/GithubPushEventMapper.js";
 import { GithubCreateRepoEventMapper } from "../../../src/infra/github/GithubCreateRepoEventMapper.js";
+import { GithubForkEventMapper } from "../../../src/infra/github/GithubForkEventMapper.js";
 
 
 describe("gitHub sourceRetriever implementation test", () => {
@@ -100,6 +101,67 @@ describe("gitHub sourceRetriever implementation test", () => {
         } as unknown as Octokit;
 
         const retriever = new GithubSourceRetriever(privateOctokit, 'jormiquis', [new GithubPushEventMapper(), new GithubCreateRepoEventMapper()]);
+        const activities = await retriever.retrieve(new Date('2026-06-20T10:00:00Z'));
+
+        expect(activities).toHaveLength(0);
+    });
+
+    it("maps a public ForkEvent to the upstream repo and the created fork", async () => {
+        const forkOctokit = {
+            rest: {
+                activity: {
+                    listEventsForAuthenticatedUser: vi.fn().mockResolvedValue({
+                        data: [{
+                            id: '777',
+                            type: 'ForkEvent',
+                            public: true,
+                            actor: { login: 'jormiquis' },
+                            repo: { name: 'vercel/next.js' },
+                            created_at: '2026-06-19T12:00:00Z',
+                            payload: {
+                                forkee: { full_name: 'jormiquis/next.js', html_url: 'https://github.com/jormiquis/next.js' }
+                            }
+                        }]
+                    })
+                },
+                repos: { compareCommits: vi.fn() }
+            }
+        } as unknown as Octokit;
+
+        const retriever = new GithubSourceRetriever(forkOctokit, 'jormiquis', [new GithubForkEventMapper()]);
+        const activities = await retriever.retrieve(new Date('2026-06-20T10:00:00Z'));
+
+        expect(activities).toHaveLength(1);
+        expect(activities[0]!.metaData).toEqual({
+            source: 'github',
+            type: 'ForkEvent',
+            sourceRepo: 'vercel/next.js',
+            fork: 'jormiquis/next.js',
+            forkUrl: 'https://github.com/jormiquis/next.js',
+        });
+    });
+
+    it("ignores a private ForkEvent", async () => {
+        const privateForkOctokit = {
+            rest: {
+                activity: {
+                    listEventsForAuthenticatedUser: vi.fn().mockResolvedValue({
+                        data: [{
+                            id: '778',
+                            type: 'ForkEvent',
+                            public: false,
+                            actor: { login: 'jormiquis' },
+                            repo: { name: 'secret/private-repo' },
+                            created_at: '2026-06-19T12:00:00Z',
+                            payload: { forkee: { full_name: 'jormiquis/private-repo', html_url: 'https://x' } }
+                        }]
+                    })
+                },
+                repos: { compareCommits: vi.fn() }
+            }
+        } as unknown as Octokit;
+
+        const retriever = new GithubSourceRetriever(privateForkOctokit, 'jormiquis', [new GithubForkEventMapper()]);
         const activities = await retriever.retrieve(new Date('2026-06-20T10:00:00Z'));
 
         expect(activities).toHaveLength(0);

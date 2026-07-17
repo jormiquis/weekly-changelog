@@ -6,6 +6,7 @@ import { Client } from "@notionhq/client";
 import 'dotenv/config';
 import { GithubPushEventMapper } from "./infra/github/GithubPushEventMapper.js";
 import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEventMapper.js";
+import { GithubForkEventMapper } from "./infra/github/GithubForkEventMapper.js";
 import { NotionEventMapper } from './infra/notion/NotionEventMapper.js';
 import { renderCard } from "./ui/card/renderCard.js";
 import { buildCardData } from "./ui/card/toCardData.js";
@@ -38,7 +39,7 @@ const version = isoWeekVersion(today);
 
 const userName = process.env.GITHUB_USERNAME || '';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
-const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper];
+const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper(), new GithubForkEventMapper()];
 const githubRetriever = new GithubSourceRetriever(octokit, userName, mappers);
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY! });

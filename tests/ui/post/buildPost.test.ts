@@ -56,6 +56,16 @@ describe('buildPost (deterministic, no AI)', () => {
     expect(post.text).toContain('1 new repo created');
   });
 
+  it('counts forked repos', () => {
+    const activities = [
+      Activity.create(new Date(), { source: 'github', type: 'ForkEvent', sourceRepo: 'vercel/next.js', fork: 'jormiquis/next.js', forkUrl: 'https://x' }),
+      Activity.create(new Date(), { source: 'github', type: 'ForkEvent', sourceRepo: 'facebook/react', fork: 'jormiquis/react', forkUrl: 'https://y' }),
+    ];
+    const post = buildPost({ ...base, activities });
+
+    expect(post.text).toContain('🍴 2 repos forked');
+  });
+
   it('falls back to a quiet-week line when there is no activity', () => {
     const post = buildPost({ ...base, activities: [] });
 

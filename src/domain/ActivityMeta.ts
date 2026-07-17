@@ -24,6 +24,17 @@ export interface CreateRepoEventMeta {
   description: string
 }
 
+export interface ForkEventMeta {
+  [key: string]: unknown
+  source: 'github'
+  type: 'ForkEvent'
+  /** The upstream repository that was forked (e.g. "vercel/next.js"). */
+  sourceRepo: string
+  /** The full name of the created fork (e.g. "jormiquis/next.js"). */
+  fork: string
+  forkUrl: string
+}
+
 export interface NotionEntryMeta {
   [key: string]: unknown
   source: 'notion'
@@ -39,6 +50,10 @@ export function isPushEvent(metaData: Record<string, unknown>): metaData is Push
 
 export function isCreateRepoEvent(metaData: Record<string, unknown>): metaData is CreateRepoEventMeta {
   return metaData.type === 'CreateEvent' && metaData.entityCreated === 'repository'
+}
+
+export function isForkEvent(metaData: Record<string, unknown>): metaData is ForkEventMeta {
+  return metaData.type === 'ForkEvent'
 }
 
 export function isNotionEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {
