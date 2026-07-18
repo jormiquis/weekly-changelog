@@ -22,6 +22,14 @@ function note(title: string) {
 const digest: SynthesizedDigest = {
   headline: 'A focused week',
   summary: 'Steady progress across a few repositories.',
+  workedOn: [
+    'New login flow and dropdown fix in the web app',
+    'Users endpoint added to the API',
+  ],
+  decisions: [
+    'Ports & adapters boundary between domain and infra',
+    'Provider-agnostic LLM fallback chain',
+  ],
   repos: [
     { repo: 'app', summary: 'New login flow and dropdown fix' },
     { repo: 'api', summary: 'Users endpoint added' },
@@ -31,40 +39,55 @@ const digest: SynthesizedDigest = {
   ],
 };
 
-describe('buildCardData (AI-driven, grouped by repo and note)', () => {
-  it('builds "shipped" bullets from the AI digest, one per repository', () => {
+describe('buildCardData', () => {
+  it('builds "workedOn" bullets from the AI digest', () => {
     const activities = [push('app', ['feat: add login button']), push('api', ['feat: add users endpoint'])];
 
     const card = buildCardData(activities, { week: 'Week of Jul 15', digest });
 
-    expect(card.shipped).toEqual([
-      'app — New login flow and dropdown fix',
-      'api — Users endpoint added',
+    expect(card.workedOn).toEqual([
+      'New login flow and dropdown fix in the web app',
+      'Users endpoint added to the API',
     ]);
   });
 
-  it('builds "learned" bullets from the AI per-note summaries', () => {
-    const activities = [note('Ports & adapters')];
+  it('builds "decisions" bullets from the AI digest', () => {
+    const card = buildCardData([], { week: 'Week of Jul 15', digest });
+
+    expect(card.decisions).toEqual([
+      'Ports & adapters boundary between domain and infra',
+      'Provider-agnostic LLM fallback chain',
+    ]);
+  });
+
+  it('builds "learnings" from raw note titles, without AI, even when a digest exists', () => {
+    const activities = [note('Ports & adapters'), note('Free-tier LLMs')];
 
     const card = buildCardData(activities, { week: 'Week of Jul 15', digest });
 
-    expect(card.learned).toEqual(['Ports & adapters — Boundaries between domain and infra']);
+    expect(card.learnings).toEqual(['Ports & adapters', 'Free-tier LLMs']);
   });
 
-  it('falls back to raw note titles for "learned" when no digest was produced', () => {
-    const activities = [note('Ports & adapters'), note('Free-tier LLMs')];
+  it('caps each topic at two bullets', () => {
+    const wideDigest: SynthesizedDigest = { ...digest, workedOn: ['a', 'b', 'c'], decisions: ['d', 'e', 'f'] };
+    const activities = [note('n1'), note('n2'), note('n3')];
+
+    const card = buildCardData(activities, { week: 'Week of Jul 15', digest: wideDigest });
+
+    expect(card.workedOn).toEqual(['a', 'b']);
+    expect(card.decisions).toEqual(['d', 'e']);
+    expect(card.learnings).toEqual(['n1', 'n2']);
+  });
+
+  it('leaves AI-driven topics empty when no digest was produced', () => {
+    const activities = [push('app', ['feat: add login button']), note('A note')];
 
     const card = buildCardData(activities, { week: 'Week of Jul 15' });
 
-    expect(card.learned).toEqual(['Ports & adapters', 'Free-tier LLMs']);
-  });
-
-  it('leaves "shipped" empty when no digest was produced', () => {
-    const activities = [push('app', ['feat: add login button'])];
-
-    const card = buildCardData(activities, { week: 'Week of Jul 15' });
-
-    expect(card.shipped).toEqual([]);
+    expect(card.workedOn).toEqual([]);
+    expect(card.decisions).toEqual([]);
+    // Learnings never depend on the digest.
+    expect(card.learnings).toEqual(['A note']);
   });
 
   it('computes raw stats: commits, notes, lines changed, and repos', () => {
@@ -83,8 +106,9 @@ describe('buildCardData (AI-driven, grouped by repo and note)', () => {
   it('produces empty bullet lists and zeroed stats when there is no activity', () => {
     const card = buildCardData([], { week: 'Week of Jul 15' });
 
-    expect(card.shipped).toEqual([]);
-    expect(card.learned).toEqual([]);
+    expect(card.workedOn).toEqual([]);
+    expect(card.decisions).toEqual([]);
+    expect(card.learnings).toEqual([]);
     expect(card.stats).toEqual({ commits: 0, notes: 0, linesChanged: 0, repos: 0 });
   });
 });

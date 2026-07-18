@@ -4,37 +4,41 @@ import { computeMetrics } from '../../domain/computeMetrics.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { CardData } from './CardData.js';
 
-const MAX_SHIPPED = 5
-const MAX_LEARNED = 4
+const MAX_WORKED_ON = 2
+const MAX_DECISIONS = 2
+const MAX_LEARNINGS = 2
 
 /**
- * "Shipped" bullets, one per repository, built from the AI digest. Each bullet
- * reads "repo — what changed", so the card is grouped by repository.
+ * "Worked on" bullets: the AI synthesis of the week's code activity (commits,
+ * pushes, forks, PRs). Empty when no digest was produced.
  */
-function buildShipped(digest?: SynthesizedDigest): string[] {
+function buildWorkedOn(digest?: SynthesizedDigest): string[] {
   if (!digest) return []
 
-  return digest.repos
-    .map(repo => `${repo.repo} — ${repo.summary}`)
-    .slice(0, MAX_SHIPPED)
+  return digest.workedOn.slice(0, MAX_WORKED_ON)
 }
 
 /**
- * "Learned" bullets, one per note. Uses the AI per-note summary when available,
- * otherwise falls back to the raw note titles so the card still renders offline.
+ * "Decisions" bullets: architectural/product decisions the AI evidenced from
+ * the week's activity — stated as facts, never explained. Empty when no digest
+ * was produced or no decision was clearly evidenced.
  */
-function buildLearned(activities: Activity[], digest?: SynthesizedDigest): string[] {
-  if (digest) {
-    return digest.notes
-      .map(note => `${note.title} — ${note.summary}`)
-      .slice(0, MAX_LEARNED)
-  }
+function buildDecisions(digest?: SynthesizedDigest): string[] {
+  if (!digest) return []
 
+  return digest.decisions.slice(0, MAX_DECISIONS)
+}
+
+/**
+ * "Learnings" bullets: the raw note titles captured this week, with NO AI
+ * involved — the notes are surfaced verbatim.
+ */
+function buildLearnings(activities: Activity[]): string[] {
   return activities
     .map(a => a.metaData)
     .filter(isNotionEntry)
     .map(note => note.title)
-    .slice(0, MAX_LEARNED)
+    .slice(0, MAX_LEARNINGS)
 }
 
 export interface BuildCardDataOptions {
@@ -49,8 +53,9 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
   return {
     week: options.week,
     version: options.version ?? options.week,
-    shipped: buildShipped(options.digest),
-    learned: buildLearned(activities, options.digest),
+    workedOn: buildWorkedOn(options.digest),
+    decisions: buildDecisions(options.digest),
+    learnings: buildLearnings(activities),
     stats: {
       commits: metrics.totalCommits,
       notes: metrics.notesTaken,

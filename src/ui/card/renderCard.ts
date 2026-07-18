@@ -25,12 +25,15 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const SHIPPED_ACCENT = '#2fae2f'
-const LEARNED_ACCENT = '#d55181'
+const WORKED_ON_ACCENT = '#2fae2f'
+const DECISIONS_ACCENT = '#e0a53b'
+const LEARNINGS_ACCENT = '#d55181'
 const VERSION_ACCENT = '#3987e5'
-const COLUMN_WIDTH = 532
-const BULLET_TEXT_WIDTH = COLUMN_WIDTH - 64 // minus horizontal padding
-const CHARS_PER_LINE = 40 // approx chars that fit one line at the bullet font size
+const COLUMN_GAP = 22
+const COLUMN_WIDTH = 349
+const COLUMN_PADDING_X = 26
+const BULLET_TEXT_WIDTH = COLUMN_WIDTH - COLUMN_PADDING_X * 2 // minus horizontal padding
+const CHARS_PER_LINE = 25 // approx chars that fit one line at the bullet font size
 
 interface SatoriNode {
   type: string
@@ -82,7 +85,7 @@ function column(theme: CardTheme, accent: string, emoji: string, title: string, 
     border: `1px solid ${theme.cardBorder}`,
     borderTop: `4px solid ${accent}`,
     borderRadius: '20px',
-    padding: '30px 32px',
+    padding: `30px ${COLUMN_PADDING_X}px`,
   }, [
     text(`${emoji}  ${title}`, { fontSize: '18px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent }),
     // satori under-measures a hard-wrapped block, so the height is set explicitly.
@@ -150,17 +153,22 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
   const title = data.title ?? 'Changelog'
   const subtitle = data.subtitle ?? 'Weekly engineering release'
 
-  // Header (~30) + gap (18) + bullet lines + vertical padding (60); both columns share the taller one.
-  const maxLines = Math.max(columnLineCount(data.shipped), columnLineCount(data.learned))
+  // Header (~30) + gap (18) + bullet lines + vertical padding (60); all columns share the taller one.
+  const maxLines = Math.max(
+    columnLineCount(data.workedOn),
+    columnLineCount(data.decisions),
+    columnLineCount(data.learnings),
+  )
   const columnHeight = 30 + 18 + maxLines * LINE_PX + 60
 
   const svg = await satori(
     box({ width: `${theme.width}px`, height: `${theme.height}px`, background: theme.background, fontFamily: theme.fontFamily }, [
       box({ flexDirection: 'column', width: '100%', height: '100%', padding: '52px 56px' }, [
         header(theme, data, title, subtitle),
-        box({ flexDirection: 'row', gap: '24px', marginTop: '34px' }, [
-          column(theme, SHIPPED_ACCENT, '🚀', 'Shipped this week', data.shipped, columnHeight),
-          column(theme, LEARNED_ACCENT, '📚', 'Learned', data.learned, columnHeight),
+        box({ flexDirection: 'row', gap: `${COLUMN_GAP}px`, marginTop: '34px' }, [
+          column(theme, WORKED_ON_ACCENT, '🚀', 'Worked on', data.workedOn, columnHeight),
+          column(theme, DECISIONS_ACCENT, '🧭', 'Decisions', data.decisions, columnHeight),
+          column(theme, LEARNINGS_ACCENT, '📚', 'Learnings', data.learnings, columnHeight),
         ]),
         box({ width: '100%', marginTop: '24px' }, [statsBar(theme, data)])
       ])
