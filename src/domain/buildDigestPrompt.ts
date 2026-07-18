@@ -1,5 +1,5 @@
 import type { Activity } from './Activity.js';
-import { isPushEvent, isCreateRepoEvent, isForkEvent, isNotionEntry } from './ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from './ActivityMeta.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -42,6 +42,13 @@ function forkLines(activities: Activity[]): string[] {
     .map(meta => `Fork of ${meta.sourceRepo} as ${repoShortName(meta.fork)}`)
 }
 
+function pullRequestLines(activities: Activity[]): string[] {
+  return activities
+    .map(activity => activity.metaData)
+    .filter(isPullRequestEvent)
+    .map(meta => `Pull request ${meta.state} in third-party repo ${meta.repo} (#${meta.number}): "${meta.title}"`)
+}
+
 export function buildDigestPrompt(activities: Activity[], week: string): string {
   const commitsByRepo = groupCommitsByRepo(activities);
   const repoNames = [...commitsByRepo.keys()];
@@ -49,7 +56,7 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
 
   const repoLines = [...commitsByRepo.entries()].map(([repo, messages]) => `${repo}: ${messages.length} commit(s) — ${messages.join('; ')}`);
   const noteLines = titles.map(title => `Note: "${title}"`);
-  const activityLines = [...repoLines, ...createdRepoLines(activities), ...forkLines(activities), ...noteLines];
+  const activityLines = [...repoLines, ...createdRepoLines(activities), ...forkLines(activities), ...pullRequestLines(activities), ...noteLines];
 
   return [
     `Write a short, impersonal weekly engineering changelog digest for ${week}.`,

@@ -25,6 +25,22 @@ describe('buildTimeline', () => {
     expect(timeline[2]!.meta).toBe('2 commits · +40 −10');
   });
 
+  it('includes pull request events, labelling opened vs merged', () => {
+    const activities = [
+      Activity.create(new Date('2026-07-15T09:00:00Z'), {
+        source: 'github', type: 'PullRequestEvent', state: 'merged', repo: 'vercel/next.js', number: 42, title: 'Fix flaky test', url: 'https://github.com/vercel/next.js/pull/42',
+      }),
+      Activity.create(new Date('2026-07-14T09:00:00Z'), {
+        source: 'github', type: 'PullRequestEvent', state: 'opened', repo: 'facebook/react', number: 7, title: 'Docs typo', url: 'https://github.com/facebook/react/pull/7',
+      }),
+    ];
+
+    const timeline = buildTimeline(activities);
+
+    expect(timeline[0]).toMatchObject({ type: 'pr', title: 'Merged PR in next.js', meta: '#42 · Fix flaky test' });
+    expect(timeline[1]).toMatchObject({ type: 'pr', title: 'Opened PR in react', meta: '#7 · Docs typo' });
+  });
+
   it('includes fork events with the upstream repo as metadata', () => {
     const activities = [
       Activity.create(new Date('2026-07-15T09:00:00Z'), {

@@ -14,7 +14,7 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//.test(value)
 }
 
-const TIMELINE_ICON = { push: '💻', repo: '🆕', fork: '🍴', note: '📝' } as const
+const TIMELINE_ICON = { push: '💻', repo: '🆕', fork: '🍴', pr: '🔀', note: '📝' } as const
 
 function pct(ratio: number): string {
   return `${Math.round(ratio * 100)}%`
@@ -161,6 +161,28 @@ function forksSection(forks: DashboardData['forks']): string {
     </section>`
 }
 
+function pullRequestsSection(pullRequests: DashboardData['pullRequests']): string {
+  if (pullRequests.length === 0) return ''
+
+  const cards = pullRequests.map(pr => {
+    const label = pr.state === 'merged' ? 'Merged' : 'Opened'
+    return `
+    <article class="entry-card accent-blue">
+      <header class="entry-head">
+        <a class="entry-title" href="${escapeHtml(pr.url)}" target="_blank" rel="noopener"><span class="emoji">🔀</span>${escapeHtml(pr.repo)} #${pr.number}</a>
+        <span class="pill">${label}</span>
+      </header>
+      <p class="description">${escapeHtml(pr.title)}</p>
+    </article>`
+  }).join('')
+
+  return `
+    <section class="dashboard-section">
+      <h2>Pull requests to other projects</h2>
+      <div class="entry-grid">${cards}</div>
+    </section>`
+}
+
 function notesSection(notes: DashboardData['notes']): string {
   if (notes.length === 0) return ''
 
@@ -192,7 +214,7 @@ function notesSection(notes: DashboardData['notes']): string {
 }
 
 export function renderDashboard(data: DashboardData): string {
-  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.notes.length > 0
+  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -364,6 +386,7 @@ export function renderDashboard(data: DashboardData): string {
     .type-repo .timeline-dot { border-color: var(--accent-green); }
     .type-fork .timeline-dot { border-color: var(--accent-yellow); }
     .type-push .timeline-dot { border-color: var(--accent-blue); }
+    .type-pr .timeline-dot { border-color: var(--accent-blue); }
 
     /* Repo cards */
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -421,6 +444,7 @@ export function renderDashboard(data: DashboardData): string {
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
     ${forksSection(data.forks)}
+    ${pullRequestsSection(data.pullRequests)}
     ${notesSection(data.notes)}
     ${!hasActivity ? '<p class="empty-state">No activity recorded this week.</p>' : ''}
   </div>

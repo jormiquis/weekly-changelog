@@ -1,9 +1,9 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isPushEvent, isCreateRepoEvent, isForkEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import { computeMetrics } from '../../domain/computeMetrics.js';
 import { buildTimeline } from '../../domain/buildTimeline.js';
-import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
+import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardPullRequest, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -100,6 +100,17 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       from: meta.sourceRepo
     }));
 
+  const pullRequests: DashboardPullRequest[] = activities
+    .map(activity => activity.metaData)
+    .filter(isPullRequestEvent)
+    .map(meta => ({
+      state: meta.state,
+      repo: meta.repo,
+      number: meta.number,
+      title: meta.title,
+      url: meta.url,
+    }));
+
   const summaryByNote = new Map((options.digest?.notes ?? []).map(({ title, summary }) => [title, summary]));
 
   const notes: DashboardNote[] = activities
@@ -131,6 +142,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     repos,
     createdRepos,
     forks,
+    pullRequests,
     notes,
     metrics: computeMetrics(activities),
     ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary } } : {})

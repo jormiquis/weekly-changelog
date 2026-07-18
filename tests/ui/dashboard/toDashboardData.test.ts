@@ -70,6 +70,19 @@ describe('buildDashboardData', () => {
     expect(dashboard.repos[0]!.evaluation).toBeUndefined();
   });
 
+  it('surfaces pull requests to third-party repos as their own dashboard section', () => {
+    const withPr = [
+      ...activities,
+      Activity.create(new Date(), { source: 'github', type: 'PullRequestEvent', state: 'merged', repo: 'vercel/next.js', number: 42, title: 'Fix flaky test', url: 'https://github.com/vercel/next.js/pull/42' }),
+    ];
+
+    const dashboard = buildDashboardData(withPr, { week: 'Week of Jul 15' });
+
+    expect(dashboard.pullRequests).toEqual([
+      { state: 'merged', repo: 'vercel/next.js', number: 42, title: 'Fix flaky test', url: 'https://github.com/vercel/next.js/pull/42' },
+    ]);
+  });
+
   it('surfaces fork events as their own dashboard section', () => {
     const withFork = [
       ...activities,

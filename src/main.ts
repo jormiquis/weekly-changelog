@@ -7,6 +7,8 @@ import 'dotenv/config';
 import { GithubPushEventMapper } from "./infra/github/GithubPushEventMapper.js";
 import { GithubCreateRepoEventMapper } from "./infra/github/GithubCreateRepoEventMapper.js";
 import { GithubForkEventMapper } from "./infra/github/GithubForkEventMapper.js";
+import { GithubPullRequestRetriever } from "./infra/github/GithubPullRequestRetriever.js";
+import { GithubPullRequestEventMapper } from "./infra/github/GithubPullRequestEventMapper.js";
 import { NotionEventMapper } from './infra/notion/NotionEventMapper.js';
 import { renderCard } from "./ui/card/renderCard.js";
 import { buildCardData } from "./ui/card/toCardData.js";
@@ -41,17 +43,19 @@ const userName = process.env.GITHUB_USERNAME || '';
 const octokit = new Octokit({auth: process.env.GITHUB_TOKEN});
 const mappers = [new GithubPushEventMapper(), new GithubCreateRepoEventMapper(), new GithubForkEventMapper()];
 const githubRetriever = new GithubSourceRetriever(octokit, userName, mappers);
+const githubPrRetriever = new GithubPullRequestRetriever(octokit, userName, [new GithubPullRequestEventMapper()]);
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY! });
 const notionRetriever = new NotionSourceRetriever(notion, process.env.NOTION_DATABASE_ID!, [new NotionEventMapper()]);
 
 
-const [ghActivities, notionActivities] = await Promise.all([
+const [ghActivities, prActivities, notionActivities] = await Promise.all([
   githubRetriever.retrieve(today),
+  githubPrRetriever.retrieve(today),
   notionRetriever.retrieve(today)
 ]);
 
-const activities = [...ghActivities, ...notionActivities];
+const activities = [...ghActivities, ...prActivities, ...notionActivities];
 
 const synthesizer: SourceSynthesizer = new FallbackSourceSynthesizer([
   new MistralSourceSynthesizer(process.env.MISTRAL_API_KEY!),

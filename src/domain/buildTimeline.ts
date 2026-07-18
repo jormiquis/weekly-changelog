@@ -1,7 +1,7 @@
 import type { Activity } from './Activity.js';
-import { isPushEvent, isCreateRepoEvent, isForkEvent, isNotionEntry } from './ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from './ActivityMeta.js';
 
-export type TimelineEventType = 'push' | 'repo' | 'fork' | 'note'
+export type TimelineEventType = 'push' | 'repo' | 'fork' | 'pr' | 'note'
 
 export interface TimelineEvent {
   type: TimelineEventType
@@ -48,6 +48,15 @@ export function buildTimeline(activities: Activity[]): TimelineEvent[] {
         title: `Forked ${repoShortName(meta.sourceRepo)}`,
         meta: `from ${meta.sourceRepo}`,
         repo: repoShortName(meta.fork),
+      });
+    } else if (isPullRequestEvent(meta)) {
+      const verb = meta.state === 'merged' ? 'Merged' : 'Opened'
+      events.push({
+        type: 'pr',
+        occurredAt,
+        title: `${verb} PR in ${repoShortName(meta.repo)}`,
+        meta: `#${meta.number} · ${meta.title}`,
+        repo: repoShortName(meta.repo),
       });
     } else if (isNotionEntry(meta)) {
       events.push({

@@ -35,6 +35,23 @@ export interface ForkEventMeta {
   forkUrl: string
 }
 
+/** Whether a pull request was opened or landed (merged) this week. */
+export type PullRequestState = 'opened' | 'merged'
+
+export interface PullRequestEventMeta {
+  [key: string]: unknown
+  source: 'github'
+  type: 'PullRequestEvent'
+  /** "opened" for a newly raised PR, "merged" for one that landed. */
+  state: PullRequestState
+  /** Full name of the third-party repo the PR targets (e.g. "vercel/next.js"). */
+  repo: string
+  /** PR number within the target repo. */
+  number: number
+  title: string
+  url: string
+}
+
 export interface NotionEntryMeta {
   [key: string]: unknown
   source: 'notion'
@@ -54,6 +71,10 @@ export function isCreateRepoEvent(metaData: Record<string, unknown>): metaData i
 
 export function isForkEvent(metaData: Record<string, unknown>): metaData is ForkEventMeta {
   return metaData.type === 'ForkEvent'
+}
+
+export function isPullRequestEvent(metaData: Record<string, unknown>): metaData is PullRequestEventMeta {
+  return metaData.type === 'PullRequestEvent'
 }
 
 export function isNotionEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {

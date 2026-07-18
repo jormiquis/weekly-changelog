@@ -25,6 +25,16 @@ export interface DashboardFork {
   from: string
 }
 
+export interface DashboardPullRequest {
+  /** "opened" or "merged". */
+  state: 'opened' | 'merged'
+  /** Full name of the third-party repo, e.g. "vercel/next.js". */
+  repo: string
+  number: number
+  title: string
+  url: string
+}
+
 export interface DashboardNote {
   emoji: string
   title: string
@@ -54,6 +64,7 @@ export interface DashboardData {
   repos: DashboardRepo[]
   createdRepos: DashboardCreatedRepo[]
   forks: DashboardFork[]
+  pullRequests: DashboardPullRequest[]
   notes: DashboardNote[]
   metrics: Metrics
   digest?: DashboardDigest
