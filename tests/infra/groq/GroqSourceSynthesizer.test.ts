@@ -14,7 +14,7 @@ describe('GroqSourceSynthesizer', () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], decisions: ['Provider-agnostic LLM fallback chain'], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] }) } }]
+        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], highlights: [{ title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] }) } }]
       })
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -22,7 +22,7 @@ describe('GroqSourceSynthesizer', () => {
     const synthesizer = new GroqSourceSynthesizer('groq-key');
     const digest = await synthesizer.synthesize(activities, week);
 
-    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], decisions: ['Provider-agnostic LLM fallback chain'], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] });
+    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], highlights: [{ title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] });
 
     const [url, options] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');

@@ -18,6 +18,11 @@ function push(repo: string, messages: string[], additions: number, deletions: nu
 const digest: SynthesizedDigest = {
   headline: 'A focused week on the changelog',
   summary: 'Steady progress shipping the AI digest feature end to end.',
+  workedOn: ['AI digest feature shipped'],
+  highlights: [
+    { title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+    { title: 'Ports & adapters boundary', repo: 'weekly-changelog', code: 'interface Sender {}', language: 'typescript' },
+  ],
   repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest end to end.' }],
   notes: [{ title: 'Ports & adapters', summary: 'Boundaries between domain and infra.' }],
 };
@@ -54,11 +59,19 @@ describe('buildDashboardData', () => {
     expect(dashboard.notes[0]!.summary).toBe('Boundaries between domain and infra.');
   });
 
-  it('builds a timeline and computes metrics from the activities', () => {
+  it('surfaces the AI code highlights, keeping the diagram only when present', () => {
     const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
 
-    expect(dashboard.timeline).toHaveLength(1);
-    expect(dashboard.timeline[0]!.type).toBe('push');
+    expect(dashboard.highlights).toEqual([
+      { title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+      { title: 'Ports & adapters boundary', repo: 'weekly-changelog', code: 'interface Sender {}', language: 'typescript' },
+    ]);
+  });
+
+  it('leaves highlights empty and computes metrics when no digest was produced', () => {
+    const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15' });
+
+    expect(dashboard.highlights).toEqual([]);
     expect(dashboard.metrics.totalCommits).toBe(1);
     expect(dashboard.metrics.repositories).toBe(1);
   });

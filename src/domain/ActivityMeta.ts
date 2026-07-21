@@ -2,6 +2,8 @@ export interface CommitFile {
   filename: string
   additions: number
   deletions: number
+  /** Unified-diff hunks for the file, when GitHub provides them (absent for binaries/huge files). */
+  patch?: string
 }
 
 export interface PushEventMeta {

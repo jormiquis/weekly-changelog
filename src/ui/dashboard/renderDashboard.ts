@@ -14,8 +14,6 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//.test(value)
 }
 
-const TIMELINE_ICON = { push: '💻', repo: '🆕', fork: '🍴', pr: '🔀', note: '📝' } as const
-
 function pct(ratio: number): string {
   return `${Math.round(ratio * 100)}%`
 }
@@ -77,25 +75,25 @@ function metricsSection(metrics: Metrics): string {
     </section>`
 }
 
-function timelineSection(timeline: DashboardData['timeline']): string {
-  if (timeline.length === 0) return ''
+function highlightsSection(highlights: DashboardData['highlights']): string {
+  if (highlights.length === 0) return ''
 
-  const items = timeline.map(event => `
-    <li class="timeline-item type-${event.type}">
-      <span class="timeline-dot">${TIMELINE_ICON[event.type]}</span>
-      <div class="timeline-body">
-        <div class="timeline-head">
-          <span class="timeline-title">${escapeHtml(event.title)}</span>
-          <span class="timeline-when">${escapeHtml(event.when)}</span>
-        </div>
-        <p class="timeline-meta">${escapeHtml(event.meta)}</p>
+  const cards = highlights.map(highlight => `
+    <article class="highlight-card">
+      <header class="highlight-head">
+        <span class="highlight-title"><span class="ai-badge">AI</span>${escapeHtml(highlight.title)}</span>
+        <span class="pill highlight-repo">${escapeHtml(highlight.repo)}</span>
+      </header>
+      <div class="highlight-body">
+        <pre class="code-panel"><code class="language-${escapeHtml(highlight.language)}">${escapeHtml(highlight.code)}</code></pre>
+        ${highlight.diagram ? `<pre class="mermaid">${escapeHtml(highlight.diagram)}</pre>` : ''}
       </div>
-    </li>`).join('')
+    </article>`).join('')
 
   return `
     <section class="dashboard-section">
-      <h2>Weekly timeline</h2>
-      <ul class="timeline">${items}</ul>
+      <h2>Code highlights</h2>
+      <div class="highlight-grid">${cards}</div>
     </section>`
 }
 
@@ -214,7 +212,9 @@ function notesSection(notes: DashboardData['notes']): string {
 }
 
 export function renderDashboard(data: DashboardData): string {
-  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
+  const hasActivity = data.highlights.length > 0 || data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
+  const hasHighlights = data.highlights.length > 0
+  const hasDiagram = data.highlights.some(highlight => Boolean(highlight.diagram))
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -227,6 +227,7 @@ export function renderDashboard(data: DashboardData): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  ${hasHighlights ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">' : ''}
   <style>
     :root {
       color-scheme: light;
@@ -246,6 +247,8 @@ export function renderDashboard(data: DashboardData): string {
       --accent-magenta-bg: rgba(232, 123, 164, 0.16);
       --accent-yellow: #eda100;
       --accent-yellow-bg: rgba(237, 161, 0, 0.14);
+      --accent-purple: #7c3aed;
+      --accent-purple-bg: rgba(124, 58, 237, 0.10);
 
       --add-color: #0a7f28;
       --del-color: #c0392f;
@@ -271,6 +274,8 @@ export function renderDashboard(data: DashboardData): string {
         --accent-magenta-bg: rgba(213, 81, 129, 0.18);
         --accent-yellow: #c98500;
         --accent-yellow-bg: rgba(201, 133, 0, 0.18);
+        --accent-purple: #a78bfa;
+        --accent-purple-bg: rgba(167, 139, 250, 0.16);
 
         --add-color: #3fb950;
         --del-color: #f85149;
@@ -372,21 +377,20 @@ export function renderDashboard(data: DashboardData): string {
     .bar-fill { display: block; height: 100%; background: var(--accent-blue); border-radius: 999px; }
     .bar-value { font-size: 13px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
-    /* Timeline */
-    .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-    .timeline-item { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding-bottom: 18px; position: relative; }
-    .timeline-item:not(:last-child)::before { content: ''; position: absolute; left: 19px; top: 34px; bottom: 0; width: 2px; background: var(--border); }
-    .timeline-dot { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; box-shadow: var(--shadow); z-index: 1; }
-    .timeline-body { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 12px 16px; }
-    .timeline-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-    .timeline-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .timeline-when { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-    .timeline-meta { font-size: 13.5px; color: var(--text-secondary); margin: 4px 0 0; word-break: break-word; }
-    .type-note .timeline-dot { border-color: var(--accent-magenta); }
-    .type-repo .timeline-dot { border-color: var(--accent-green); }
-    .type-fork .timeline-dot { border-color: var(--accent-yellow); }
-    .type-push .timeline-dot { border-color: var(--accent-blue); }
-    .type-pr .timeline-dot { border-color: var(--accent-blue); }
+    /* Code highlights */
+    .highlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); gap: 16px; }
+    .highlight-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent-purple); border-radius: 14px; box-shadow: var(--shadow); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .highlight-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .highlight-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .highlight-repo { color: var(--accent-purple); background: var(--accent-purple-bg); }
+    .highlight-body { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 720px) { .highlight-body:has(.mermaid) { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; } }
+
+    /* Code panel — a dark editor surface in both themes for a consistent showcase look. */
+    .code-panel { margin: 0; border-radius: 10px; background: #10131a; border: 1px solid rgba(255, 255, 255, 0.08); padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.55; }
+    .code-panel code { font-family: 'SFMono-Regular', ui-monospace, 'JetBrains Mono', Menlo, Consolas, monospace; color: #c9d1d9; white-space: pre; }
+    .mermaid { margin: 0; display: flex; align-items: center; justify-content: center; background: #10131a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; overflow-x: auto; min-height: 120px; }
+    .mermaid svg { max-width: 100%; height: auto; }
 
     /* Repo cards */
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -439,8 +443,8 @@ export function renderDashboard(data: DashboardData): string {
       <span class="week-pill">${escapeHtml(data.week)}</span>
     </header>
     ${digestSection(data.digest)}
+    ${highlightsSection(data.highlights)}
     ${metricsSection(data.metrics)}
-    ${timelineSection(data.timeline)}
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
     ${forksSection(data.forks)}
@@ -451,6 +455,12 @@ export function renderDashboard(data: DashboardData): string {
   <footer>
     Generated ${escapeHtml(data.generatedAt)} &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
+  ${hasHighlights ? `<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>` : ''}
+  ${hasDiagram ? `<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'strict' });
+  </script>` : ''}
 </body>
 </html>
 `

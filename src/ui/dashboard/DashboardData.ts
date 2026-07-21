@@ -1,5 +1,4 @@
 import type { Metrics } from '../../domain/computeMetrics.js';
-import type { TimelineEventType } from '../../domain/buildTimeline.js';
 
 export interface DashboardRepo {
   name: string
@@ -49,18 +48,23 @@ export interface DashboardDigest {
   summary: string
 }
 
-export interface DashboardTimelineEvent {
-  type: TimelineEventType
-  /** Display-formatted timestamp, e.g. "Mon, Jul 14 · 3:20 PM". */
-  when: string
+export interface DashboardHighlight {
+  /** The design pattern / architectural decision, enunciated. */
   title: string
-  meta: string
+  /** Short repo name where it lives. */
+  repo: string
+  /** Attractive, self-contained code snippet. */
+  code: string
+  /** Language for syntax highlighting, e.g. "typescript". */
+  language: string
+  /** Optional simple mermaid diagram source. */
+  diagram?: string
 }
 
 export interface DashboardData {
   week: string
   generatedAt: string
-  timeline: DashboardTimelineEvent[]
+  highlights: DashboardHighlight[]
   repos: DashboardRepo[]
   createdRepos: DashboardCreatedRepo[]
   forks: DashboardFork[]

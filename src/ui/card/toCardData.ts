@@ -19,14 +19,17 @@ function buildWorkedOn(digest?: SynthesizedDigest): string[] {
 }
 
 /**
- * "Decisions" bullets: architectural/product decisions the AI evidenced from
- * the week's activity — stated as facts, never explained. Empty when no digest
- * was produced or no decision was clearly evidenced.
+ * "Decisions" bullets: the design patterns / architectural decisions the AI
+ * distilled from the week's code diffs, stated as facts (never explained) and
+ * carrying the repo where each lives for context. Empty when no digest was
+ * produced or nothing worthwhile was found.
  */
 function buildDecisions(digest?: SynthesizedDigest): string[] {
   if (!digest) return []
 
-  return digest.decisions.slice(0, MAX_DECISIONS)
+  return digest.highlights
+    .slice(0, MAX_DECISIONS)
+    .map(highlight => `${highlight.title} · ${highlight.repo}`)
 }
 
 /**

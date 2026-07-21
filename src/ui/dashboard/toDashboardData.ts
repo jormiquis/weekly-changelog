@@ -2,8 +2,7 @@ import type { Activity } from '../../domain/Activity.js';
 import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import { computeMetrics } from '../../domain/computeMetrics.js';
-import { buildTimeline } from '../../domain/buildTimeline.js';
-import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardPullRequest, DashboardRepo, DashboardTimelineEvent } from './DashboardData.js';
+import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardHighlight, DashboardNote, DashboardPullRequest, DashboardRepo } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -11,10 +10,6 @@ function repoShortName(fullName: string): string {
 
 function formatGeneratedAt(date: Date): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-}
-
-function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 function parseCompareShas(diffUrl: string): { before: string; after: string } | null {
@@ -128,17 +123,18 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       }
     });
 
-  const timeline: DashboardTimelineEvent[] = buildTimeline(activities).map(event => ({
-    type: event.type,
-    when: formatWhen(event.occurredAt),
-    title: event.title,
-    meta: event.meta,
+  const highlights: DashboardHighlight[] = (options.digest?.highlights ?? []).map(highlight => ({
+    title: highlight.title,
+    repo: highlight.repo,
+    code: highlight.code,
+    language: highlight.language,
+    ...(highlight.diagram && highlight.diagram.trim().length > 0 ? { diagram: highlight.diagram } : {})
   }));
 
   return {
     week: options.week,
     generatedAt: formatGeneratedAt(new Date()),
-    timeline,
+    highlights,
     repos,
     createdRepos,
     forks,
