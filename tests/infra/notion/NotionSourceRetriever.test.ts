@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Client } from '@notionhq/client';
-import { NotionSourceRetriever } from '../../../src/infra/notion/NotionSourceRetriever';
-import { NotionEventMapper } from '../../../src/infra/notion/NotionEventMapper';
+import { NotionSourceRetriever } from '../../../src/infra/notion/NotionSourceRetriever.js';
+import { NotionEventMapper } from '../../../src/infra/notion/NotionEventMapper.js';
 
 describe('NotionSourceRetriever', () => {
   const notionPages = [

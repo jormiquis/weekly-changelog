@@ -101,38 +101,6 @@ function column(theme: CardTheme, accent: string, emoji: string, title: string, 
   ])
 }
 
-function statTile(theme: CardTheme, value: string, label: string): SatoriNode {
-  return box({ flexDirection: 'column', flex: 1, alignItems: 'center', gap: '6px' }, [
-    text(value, { fontSize: '40px', fontWeight: 700, color: theme.textPrimary }),
-    text(label, { fontSize: '15px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: theme.textMuted })
-  ])
-}
-
-function statsBar(theme: CardTheme, data: CardData): SatoriNode {
-  const tiles = [
-    statTile(theme, String(data.stats.commits), 'commits'),
-    statTile(theme, String(data.stats.notes), 'notes'),
-    statTile(theme, data.stats.linesChanged.toLocaleString('en-US'), 'lines changed'),
-    statTile(theme, String(data.stats.repos), data.stats.repos === 1 ? 'repo' : 'repos'),
-  ]
-
-  const children: SatoriNode[] = []
-  tiles.forEach((tile, index) => {
-    if (index > 0) children.push(box({ width: '1px', alignSelf: 'stretch', backgroundColor: theme.cardBorder, marginTop: '6px', marginBottom: '6px' }, []))
-    children.push(tile)
-  })
-
-  return box({
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    backgroundColor: theme.cardBg,
-    border: `1px solid ${theme.cardBorder}`,
-    borderRadius: '20px',
-    padding: '26px 20px',
-  }, children)
-}
-
 function header(theme: CardTheme, data: CardData, title: string, subtitle: string): SatoriNode {
   return box({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, [
     box({ flexDirection: 'row', alignItems: 'center', gap: '18px' }, [
@@ -159,7 +127,9 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
     columnLineCount(data.decisions),
     columnLineCount(data.learnings),
   )
-  const columnHeight = 30 + 18 + maxLines * LINE_PX + 60
+  // Floor keeps the columns filling the card now that the stats bar is gone; content taller than the floor still grows.
+  const MIN_COLUMN_HEIGHT = 480
+  const columnHeight = Math.max(30 + 18 + maxLines * LINE_PX + 60, MIN_COLUMN_HEIGHT)
 
   const svg = await satori(
     box({ width: `${theme.width}px`, height: `${theme.height}px`, background: theme.background, fontFamily: theme.fontFamily }, [
@@ -170,7 +140,6 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
           column(theme, DECISIONS_ACCENT, '🧭', 'Decisions', data.decisions, columnHeight),
           column(theme, LEARNINGS_ACCENT, '📚', 'Learnings', data.learnings, columnHeight),
         ]),
-        box({ width: '100%', marginTop: '24px' }, [statsBar(theme, data)])
       ])
     ]),
     { width: theme.width, height: theme.height, fonts, loadAdditionalAsset }

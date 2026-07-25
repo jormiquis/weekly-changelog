@@ -14,7 +14,7 @@ describe('MistralSourceSynthesizer', () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], highlights: [{ title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] }) } }]
+        choices: [{ message: { content: JSON.stringify({ headline: 'A productive week', summary: 'Steady progress across the codebase.', repos: [{ repo: 'weekly-changelog', product: 'a weekly changelog project', workedOnLine: 'added an AI digest on a weekly changelog project', summary: 'The changelog now turns the week into a product-oriented digest.', productChanges: ['AI-written weekly digest'], highlights: [{ title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }] }], notes: [] }) } }]
       })
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -22,7 +22,7 @@ describe('MistralSourceSynthesizer', () => {
     const synthesizer = new MistralSourceSynthesizer('mistral-key');
     const digest = await synthesizer.synthesize(activities, week);
 
-    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', workedOn: ['AI digest feature shipped'], highlights: [{ title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }], repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest feature.' }], notes: [] });
+    expect(digest).toEqual({ headline: 'A productive week', summary: 'Steady progress across the codebase.', repos: [{ repo: 'weekly-changelog', product: 'a weekly changelog project', workedOnLine: 'added an AI digest on a weekly changelog project', summary: 'The changelog now turns the week into a product-oriented digest.', productChanges: ['AI-written weekly digest'], highlights: [{ title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }] }], notes: [] });
 
     const [url, options] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.mistral.ai/v1/chat/completions');

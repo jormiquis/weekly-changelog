@@ -101,34 +101,38 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
   const codeDiffs = buildCodeDiffs(activities);
 
   return [
-    `Write a short, impersonal weekly engineering changelog digest for ${week}.`,
+    `Write a short, impersonal, PRODUCT-oriented weekly changelog for ${week}.`,
+    'Frame everything as changes to a product a user experiences, not as git/engineering activity.',
+    '',
     'Raw activity log:',
     activityLines.length > 0 ? activityLines.map(line => `- ${line}`).join('\n') : '- No activity recorded this week.',
     '',
-    'Code diffs from this week (unified diff, truncated). Use these to find genuinely noteworthy engineering — design patterns, architectural boundaries, clever abstractions:',
+    'Code diffs from this week (unified diff, truncated). Infer, per repository, WHAT PRODUCT it is (from paths, names, symbols, strings) and WHAT CHANGED in that product this week. Also spot genuinely noteworthy engineering — design patterns, architectural boundaries, clever abstractions:',
     codeDiffs.length > 0 ? codeDiffs : '(no code diffs available)',
     '',
     'Respond with ONLY strict JSON (no markdown fences, no commentary) matching exactly this shape:',
-    '{"headline": string, "summary": string, "workedOn": [string], "highlights": [{"title": string, "repo": string, "code": string, "language": string, "diagram": string}], "repos": [{"repo": string, "summary": string}], "notes": [{"title": string, "summary": string}]}',
+    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "workedOnLine": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "code": string, "language": string, "diagram": string}]}], "notes": [{"title": string, "summary": string}]}',
     '',
-    'Tone constraints, apply to every prose field (headline, summary, workedOn, highlight title, repo summary, note summary):',
+    'Tone constraints, apply to every prose field:',
     '- Impersonal. Use nominal phrases or neutral/passive constructions.',
-    '- Never use "you", "I", "we", or any first/second person pronoun or verb conjugated for a person (no "shipped", "you added").',
-    '- Prefer nouns over personal verbs where natural, e.g. "Refactor of the notifier" instead of "Refactored the notifier" or "You refactored the notifier".',
+    '- Never use "you", "I", "we", or any first/second person pronoun or verb conjugated for a person (no "we shipped", "you added").',
+    '- Product-oriented: describe user-facing capability and outcomes, not commit mechanics. Avoid words like "commit", "diff", "push", "PR".',
     '',
     'Field constraints:',
     '- headline: max 70 characters, punchy, no trailing period.',
-    '- summary: 1-2 sentences giving an overall picture of the week.',
-    '- workedOn: 1 to 2 bullets synthesizing the concrete work delivered this week (commits, pushes, forks, new repos, PRs). Group by outcome, not by repository. Each bullet is a nominal phrase, max 14 words. Empty array only if there was no code activity at all.',
-    '- highlights: 0 to 3 entries, ONLY for genuinely worthwhile engineering found in the code diffs above. Skip trivial changes (renames, config, formatting). If nothing is worthwhile, return an empty array — do NOT invent highlights.',
-    '  · "title": the design pattern or architectural decision, ENUNCIATED not explained (e.g. "Ports & adapters boundary", "Provider fallback chain", "Discriminated union for event metadata"). Max 8 words. No rationale, no "because".',
-    '  · "repo": the short repo name copied VERBATIM from the "# repo:" line of the diff the highlight comes from.',
-    '  · "code": a SHORT (max ~14 lines), self-contained, attractive snippet distilled from that diff that best evidences the pattern. Real code from the diff, cleaned of diff +/- markers. Preserve newlines as \\n.',
-    '  · "language": the source language, lowercase (e.g. "typescript").',
-    '  · "diagram": a SIMPLE, valid mermaid diagram (flowchart, e.g. "flowchart LR\\n  A[Domain] --> B[Port] --> C[Adapter]") illustrating the pattern with 3-6 nodes. Keep it minimal. Use "" only if a diagram truly does not fit.',
+    '- summary: 1-2 sentences giving an overall product picture of the week.',
     repoNames.length > 0
-      ? `- repos: exactly one entry per repository listed above with commits (${repoNames.join(', ')}). "repo" is the repository name copied VERBATIM, and "summary" is 1 sentence (max 25 words) assessing what the commits accomplished for that repository — the actual change, not who made it.`
+      ? `- repos: exactly one entry per repository listed above with commits (${repoNames.join(', ')}). "repo" is the repository name copied VERBATIM. For each:`
       : '- repos: empty array, since no repository had commits this week.',
+    '  · "product": a short noun phrase for what the repo IS, product-oriented, inferred from the code, e.g. "a work diary project", "a personal finance API". Max 8 words. No repo name, no leading article beyond "a/an".',
+    '  · "workedOnLine": ONE product-oriented line combining the week\'s main change with the product context, phrased like "created a new way of publishing posts on a work diary project". Start with a past-tense-free nominal/neutral change, then " on " + the product. Max 18 words.',
+    '  · "summary": 2-3 sentences describing what was done this week for that product, more extensive than workedOnLine. Product outcomes, grounded in the diffs.',
+    '  · "productChanges": 1 to 4 bullets, each a concrete user-facing change to the product this week (a capability added, changed, or fixed). Nominal phrase, max 14 words. Never mention where in the code it lives.',
+    '  · "highlights": 0 to 3 entries, ONLY for genuinely worthwhile engineering in this repo\'s diffs. Skip trivial changes (renames, config, formatting). Empty array if nothing is worthwhile — do NOT invent.',
+    '      "title": the design pattern or architectural decision, ENUNCIATED as a bare fact, e.g. "Composition over inheritance", "Provider fallback chain", "Refactor to aggregate pattern". Max 8 words. No rationale, no "because", no file/location.',
+    '      "code": a SHORT (max ~14 lines), self-contained, attractive snippet distilled from that diff that best evidences the pattern. Real code from the diff, cleaned of diff +/- markers. Preserve newlines as \\n.',
+    '      "language": the source language, lowercase (e.g. "typescript").',
+    '      "diagram": a SIMPLE, valid mermaid diagram (flowchart, e.g. "flowchart LR\\n  A[Domain] --> B[Port] --> C[Adapter]") illustrating the pattern with 3-6 nodes. Use "" only if a diagram truly does not fit.',
     titles.length > 0
       ? `- notes: exactly one entry per note listed above (${titles.length} note(s)). "title" is the note title copied VERBATIM, and "summary" is 1 sentence (max 25 words) summarizing what the note is about.`
       : '- notes: empty array, since no notes were captured this week.'

@@ -1,35 +1,32 @@
 import type { Activity } from '../../domain/Activity.js';
 import { isNotionEntry } from '../../domain/ActivityMeta.js';
-import { computeMetrics } from '../../domain/computeMetrics.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { CardData } from './CardData.js';
 
-const MAX_WORKED_ON = 2
-const MAX_DECISIONS = 2
+const MAX_WORKED_ON = 3
+const MAX_DECISIONS = 3
 const MAX_LEARNINGS = 2
 
 /**
- * "Worked on" bullets: the AI synthesis of the week's code activity (commits,
- * pushes, forks, PRs). Empty when no digest was produced.
+ * "Worked on" bullets: one product-oriented line per repo, combining the week's
+ * change with what the product is. Empty when no digest was produced.
  */
 function buildWorkedOn(digest?: SynthesizedDigest): string[] {
   if (!digest) return []
 
-  return digest.workedOn.slice(0, MAX_WORKED_ON)
+  return digest.repos.map(repo => repo.workedOnLine).slice(0, MAX_WORKED_ON)
 }
 
 /**
- * "Decisions" bullets: the design patterns / architectural decisions the AI
- * distilled from the week's code diffs, stated as facts (never explained) and
- * carrying the repo where each lives for context. Empty when no digest was
- * produced or nothing worthwhile was found.
+ * "Decisions" bullets: the factual technical decisions the AI distilled from the
+ * diffs (e.g. "Composition over inheritance"), stated with no location. Empty
+ * when no digest was produced or nothing worthwhile was found.
  */
 function buildDecisions(digest?: SynthesizedDigest): string[] {
   if (!digest) return []
 
-  return digest.highlights
-    .slice(0, MAX_DECISIONS)
-    .map(highlight => `${highlight.title} · ${highlight.repo}`)
+  const titles = digest.repos.flatMap(repo => repo.highlights.map(highlight => highlight.title))
+  return [...new Set(titles)].slice(0, MAX_DECISIONS)
 }
 
 /**
@@ -51,19 +48,11 @@ export interface BuildCardDataOptions {
 }
 
 export function buildCardData(activities: Activity[], options: BuildCardDataOptions): CardData {
-  const metrics = computeMetrics(activities);
-
   return {
     week: options.week,
     version: options.version ?? options.week,
     workedOn: buildWorkedOn(options.digest),
     decisions: buildDecisions(options.digest),
     learnings: buildLearnings(activities),
-    stats: {
-      commits: metrics.totalCommits,
-      notes: metrics.notesTaken,
-      linesChanged: metrics.totalAdditions + metrics.totalDeletions,
-      repos: metrics.repositories,
-    },
   }
 }

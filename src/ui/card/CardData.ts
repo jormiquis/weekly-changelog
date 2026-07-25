@@ -1,20 +1,12 @@
-export interface CardStats {
-  commits: number
-  notes: number
-  linesChanged: number
-  repos: number
-}
-
 export interface CardData {
   week: string
   version: string
-  /** AI-synthesized bullets on the work delivered: commits, pushes, forks, PRs. */
+  /** Product-oriented lines, one per repo: the week's change + what the product is. */
   workedOn: string[]
-  /** AI-surfaced architectural/product decisions, evidenced not explained. */
+  /** Factual technical decisions distilled from the diffs (no location). */
   decisions: string[]
   /** Raw note titles captured this week — no AI involved. */
   learnings: string[]
-  stats: CardStats
   title?: string
   subtitle?: string
 }

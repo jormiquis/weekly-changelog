@@ -1,14 +1,27 @@
-import type { Metrics } from '../../domain/computeMetrics.js';
+export interface DashboardHighlight {
+  /** The design pattern / architectural decision, enunciated. */
+  title: string
+  /** Attractive, self-contained code snippet. */
+  code: string
+  /** Language for syntax highlighting, e.g. "typescript". */
+  language: string
+  /** Optional simple mermaid diagram source. */
+  diagram?: string
+}
 
 export interface DashboardRepo {
   name: string
   url: string
-  totalCommits: number
+  /** Link to the combined diff for the week. */
   diffUrl: string
-  commits: string[]
-  additions: number
-  deletions: number
-  evaluation?: string
+  /** What the product this repo represents is, e.g. "a work diary project". */
+  product?: string
+  /** Extensive AI summary of what was done this week. */
+  summary?: string
+  /** Product-facing changes this week. */
+  productChanges: string[]
+  /** Code highlights distilled from this repo's diffs. */
+  highlights: DashboardHighlight[]
 }
 
 export interface DashboardCreatedRepo {
@@ -48,28 +61,13 @@ export interface DashboardDigest {
   summary: string
 }
 
-export interface DashboardHighlight {
-  /** The design pattern / architectural decision, enunciated. */
-  title: string
-  /** Short repo name where it lives. */
-  repo: string
-  /** Attractive, self-contained code snippet. */
-  code: string
-  /** Language for syntax highlighting, e.g. "typescript". */
-  language: string
-  /** Optional simple mermaid diagram source. */
-  diagram?: string
-}
-
 export interface DashboardData {
   week: string
   generatedAt: string
-  highlights: DashboardHighlight[]
   repos: DashboardRepo[]
   createdRepos: DashboardCreatedRepo[]
   forks: DashboardFork[]
   pullRequests: DashboardPullRequest[]
   notes: DashboardNote[]
-  metrics: Metrics
   digest?: DashboardDigest
 }

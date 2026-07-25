@@ -1,8 +1,33 @@
-export interface RepoSummary {
+export interface CodeHighlight {
+  /** The design pattern / architectural decision, enunciated — never explained. */
+  title: string
+  /** A short, attractive, self-contained code snippet distilled from the diff. */
+  code: string
+  /** Language for syntax highlighting, e.g. "typescript". */
+  language: string
+  /** Optional simple mermaid diagram (graph/flowchart) illustrating the pattern. */
+  diagram?: string
+}
+
+export interface RepoDigest {
   /** Short repository name, e.g. "weekly-changelog". */
   repo: string
-  /** One-sentence AI summary of what the commits accomplished for that repo. */
+  /**
+   * What the product this repo represents IS, product-oriented and inferred from
+   * the code — e.g. "a work diary project". A noun phrase, no repo name.
+   */
+  product: string
+  /**
+   * One product-oriented line for the card, combining the week's change with the
+   * product context, e.g. "created a new way of publishing posts on a work diary project".
+   */
+  workedOnLine: string
+  /** Extensive summary (dashboard) of what was done this week, from diffs + commits. */
   summary: string
+  /** Product-facing bullets: what changed in the product this week. */
+  productChanges: string[]
+  /** Code highlights distilled from this repo's diffs. */
+  highlights: CodeHighlight[]
 }
 
 export interface NoteSummary {
@@ -12,37 +37,17 @@ export interface NoteSummary {
   summary: string
 }
 
-export interface CodeHighlight {
-  /** The design pattern / architectural decision, enunciated — never explained. */
-  title: string
-  /** Short repo name where it was done, e.g. "weekly-changelog". */
-  repo: string
-  /** A short, attractive, self-contained code snippet distilled from the diff. */
-  code: string
-  /** Language for syntax highlighting, e.g. "typescript". */
-  language: string
-  /** Optional simple mermaid diagram (graph/flowchart) illustrating the pattern. */
-  diagram?: string
-}
-
 export interface SynthesizedDigest {
   headline: string
   summary: string
-  /**
-   * 1-2 bullets synthesizing the concrete work delivered this week — commits,
-   * pushes, forks, PRs, new repos. Grouped by outcome, not by repository.
-   */
-  workedOn: string[]
-  /**
-   * Code highlights the AI distilled from the week's diffs: a design pattern or
-   * architectural decision, enunciated (never explained), with an attractive
-   * code snippet, the repo it lives in, and an optional simple diagram.
-   */
-  highlights: CodeHighlight[]
-  /** Per-repository summaries, one entry per repo that had commits this week. */
-  repos: RepoSummary[]
+  /** Per-repository digest, one entry per repo that had commits this week. */
+  repos: RepoDigest[]
   /** Per-note summaries, one entry per note captured this week. */
   notes: NoteSummary[]
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
 }
 
 /** True for an array whose every element is a non-empty string (empty array passes). */
@@ -51,31 +56,29 @@ function isStringArray(value: unknown): value is string[] {
     && value.every(item => typeof item === 'string' && item.trim().length > 0)
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0
-}
-
 function isCodeHighlight(value: unknown): value is CodeHighlight {
   if (typeof value !== 'object' || value === null) return false
 
   const candidate = value as Record<string, unknown>
 
   return isNonEmptyString(candidate.title)
-    && isNonEmptyString(candidate.repo)
     && isNonEmptyString(candidate.code)
     && isNonEmptyString(candidate.language)
     && (candidate.diagram === undefined || typeof candidate.diagram === 'string')
 }
 
-function isRepoSummary(value: unknown): value is RepoSummary {
+function isRepoDigest(value: unknown): value is RepoDigest {
   if (typeof value !== 'object' || value === null) return false
 
   const candidate = value as Record<string, unknown>
 
-  return typeof candidate.repo === 'string'
-    && candidate.repo.trim().length > 0
-    && typeof candidate.summary === 'string'
-    && candidate.summary.trim().length > 0
+  return isNonEmptyString(candidate.repo)
+    && isNonEmptyString(candidate.product)
+    && isNonEmptyString(candidate.workedOnLine)
+    && isNonEmptyString(candidate.summary)
+    && isStringArray(candidate.productChanges)
+    && Array.isArray(candidate.highlights)
+    && candidate.highlights.every(isCodeHighlight)
 }
 
 function isNoteSummary(value: unknown): value is NoteSummary {
@@ -83,10 +86,8 @@ function isNoteSummary(value: unknown): value is NoteSummary {
 
   const candidate = value as Record<string, unknown>
 
-  return typeof candidate.title === 'string'
-    && candidate.title.trim().length > 0
-    && typeof candidate.summary === 'string'
-    && candidate.summary.trim().length > 0
+  return isNonEmptyString(candidate.title)
+    && isNonEmptyString(candidate.summary)
 }
 
 export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest {
@@ -94,15 +95,10 @@ export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest 
 
   const candidate = value as Record<string, unknown>
 
-  return typeof candidate.headline === 'string'
-    && candidate.headline.trim().length > 0
-    && typeof candidate.summary === 'string'
-    && candidate.summary.trim().length > 0
-    && isStringArray(candidate.workedOn)
-    && Array.isArray(candidate.highlights)
-    && candidate.highlights.every(isCodeHighlight)
+  return isNonEmptyString(candidate.headline)
+    && isNonEmptyString(candidate.summary)
     && Array.isArray(candidate.repos)
-    && candidate.repos.every(isRepoSummary)
+    && candidate.repos.every(isRepoDigest)
     && Array.isArray(candidate.notes)
     && candidate.notes.every(isNoteSummary)
 }

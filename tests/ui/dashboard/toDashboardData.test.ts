@@ -18,12 +18,17 @@ function push(repo: string, messages: string[], additions: number, deletions: nu
 const digest: SynthesizedDigest = {
   headline: 'A focused week on the changelog',
   summary: 'Steady progress shipping the AI digest feature end to end.',
-  workedOn: ['AI digest feature shipped'],
-  highlights: [
-    { title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
-    { title: 'Ports & adapters boundary', repo: 'weekly-changelog', code: 'interface Sender {}', language: 'typescript' },
-  ],
-  repos: [{ repo: 'weekly-changelog', summary: 'Ships the AI digest end to end.' }],
+  repos: [{
+    repo: 'weekly-changelog',
+    product: 'a weekly changelog project',
+    workedOnLine: 'added an AI digest on a weekly changelog project',
+    summary: 'The changelog now turns the week into a product-oriented digest.',
+    productChanges: ['AI-written weekly digest', 'Dashboard product updates'],
+    highlights: [
+      { title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+      { title: 'Ports & adapters boundary', code: 'interface Sender {}', language: 'typescript' },
+    ],
+  }],
   notes: [{ title: 'Ports & adapters', summary: 'Boundaries between domain and infra.' }],
 };
 
@@ -39,13 +44,25 @@ describe('buildDashboardData', () => {
     });
   });
 
-  it('attaches the matching per-repo summary and diff stats to its repo', () => {
+  it('attaches the matching per-repo product, summary, changes and highlights', () => {
     const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
 
     const repo = dashboard.repos[0]!;
-    expect(repo.evaluation).toBe('Ships the AI digest end to end.');
-    expect(repo.additions).toBe(120);
-    expect(repo.deletions).toBe(30);
+    expect(repo.name).toBe('weekly-changelog');
+    expect(repo.product).toBe('a weekly changelog project');
+    expect(repo.summary).toBe('The changelog now turns the week into a product-oriented digest.');
+    expect(repo.productChanges).toEqual(['AI-written weekly digest', 'Dashboard product updates']);
+    expect(repo.highlights).toEqual([
+      { title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+      { title: 'Ports & adapters boundary', code: 'interface Sender {}', language: 'typescript' },
+    ]);
+  });
+
+  it('does not surface raw commits on the repo card', () => {
+    const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
+
+    expect(dashboard.repos[0]).not.toHaveProperty('commits');
+    expect(dashboard.repos[0]!.diffUrl).toBeTruthy();
   });
 
   it('attaches the matching per-note summary to its note', () => {
@@ -59,28 +76,15 @@ describe('buildDashboardData', () => {
     expect(dashboard.notes[0]!.summary).toBe('Boundaries between domain and infra.');
   });
 
-  it('surfaces the AI code highlights, keeping the diagram only when present', () => {
-    const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
-
-    expect(dashboard.highlights).toEqual([
-      { title: 'Provider fallback chain', repo: 'weekly-changelog', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
-      { title: 'Ports & adapters boundary', repo: 'weekly-changelog', code: 'interface Sender {}', language: 'typescript' },
-    ]);
-  });
-
-  it('leaves highlights empty and computes metrics when no digest was produced', () => {
-    const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15' });
-
-    expect(dashboard.highlights).toEqual([]);
-    expect(dashboard.metrics.totalCommits).toBe(1);
-    expect(dashboard.metrics.repositories).toBe(1);
-  });
-
-  it('leaves digest undefined and repo evaluation unset when no digest was produced', () => {
+  it('leaves per-repo product fields empty when no digest was produced', () => {
     const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15' });
 
     expect(dashboard.digest).toBeUndefined();
-    expect(dashboard.repos[0]!.evaluation).toBeUndefined();
+    const repo = dashboard.repos[0]!;
+    expect(repo.product).toBeUndefined();
+    expect(repo.summary).toBeUndefined();
+    expect(repo.productChanges).toEqual([]);
+    expect(repo.highlights).toEqual([]);
   });
 
   it('surfaces pull requests to third-party repos as their own dashboard section', () => {

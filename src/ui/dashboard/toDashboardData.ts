@@ -1,8 +1,7 @@
 import type { Activity } from '../../domain/Activity.js';
 import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
-import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
-import { computeMetrics } from '../../domain/computeMetrics.js';
-import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardHighlight, DashboardNote, DashboardPullRequest, DashboardRepo } from './DashboardData.js';
+import type { RepoDigest, SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
+import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardPullRequest, DashboardRepo } from './DashboardData.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -28,9 +27,6 @@ function combinedDiffUrl(fullName: string, pushes: PendingPush[]): string {
 
 interface PendingPush {
   diffUrl: string
-  commits: string[]
-  additions: number
-  deletions: number
 }
 
 export interface BuildDashboardDataOptions {
@@ -49,30 +45,29 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     if (!repoPushes.has(fullName)) {
       repoPushes.set(fullName, { url: `https://github.com/${fullName}`, pushes: [] });
     }
-    repoPushes.get(fullName)!.pushes.push({
-      diffUrl: meta.diff,
-      commits: meta.commitMessages.map(commit => (commit.message.split('\n')[0] ?? commit.message).trim()),
-      additions: meta.additions,
-      deletions: meta.deletions,
-    });
+    repoPushes.get(fullName)!.pushes.push({ diffUrl: meta.diff });
   }
 
-  const summaryByRepo = new Map((options.digest?.repos ?? []).map(({ repo, summary }) => [repo, summary]));
+  const digestByRepo = new Map<string, RepoDigest>((options.digest?.repos ?? []).map(repo => [repo.repo, repo]));
 
   const repos: DashboardRepo[] = [...repoPushes.entries()]
     .map(([fullName, { url, pushes }]) => {
       const name = repoShortName(fullName);
-      const evaluation = summaryByRepo.get(name);
+      const repoDigest = digestByRepo.get(name);
 
       return {
         name,
         url,
-        totalCommits: pushes.reduce((sum, push) => sum + push.commits.length, 0),
         diffUrl: combinedDiffUrl(fullName, pushes),
-        commits: pushes.flatMap(push => push.commits),
-        additions: pushes.reduce((sum, push) => sum + push.additions, 0),
-        deletions: pushes.reduce((sum, push) => sum + push.deletions, 0),
-        ...(evaluation ? { evaluation } : {})
+        productChanges: repoDigest?.productChanges ?? [],
+        highlights: (repoDigest?.highlights ?? []).map(highlight => ({
+          title: highlight.title,
+          code: highlight.code,
+          language: highlight.language,
+          ...(highlight.diagram && highlight.diagram.trim().length > 0 ? { diagram: highlight.diagram } : {})
+        })),
+        ...(repoDigest?.product ? { product: repoDigest.product } : {}),
+        ...(repoDigest?.summary ? { summary: repoDigest.summary } : {}),
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -123,24 +118,14 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       }
     });
 
-  const highlights: DashboardHighlight[] = (options.digest?.highlights ?? []).map(highlight => ({
-    title: highlight.title,
-    repo: highlight.repo,
-    code: highlight.code,
-    language: highlight.language,
-    ...(highlight.diagram && highlight.diagram.trim().length > 0 ? { diagram: highlight.diagram } : {})
-  }));
-
   return {
     week: options.week,
     generatedAt: formatGeneratedAt(new Date()),
-    highlights,
     repos,
     createdRepos,
     forks,
     pullRequests,
     notes,
-    metrics: computeMetrics(activities),
     ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary } } : {})
   }
 }

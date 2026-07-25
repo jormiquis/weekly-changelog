@@ -1,5 +1,4 @@
-import type { DashboardData } from './DashboardData.js';
-import type { Metrics } from '../../domain/computeMetrics.js';
+import type { DashboardData, DashboardHighlight } from './DashboardData.js';
 
 function escapeHtml(value: string): string {
   return value
@@ -14,10 +13,6 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//.test(value)
 }
 
-function pct(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`
-}
-
 function digestSection(digest: DashboardData['digest']): string {
   if (!digest) return ''
 
@@ -29,97 +24,53 @@ function digestSection(digest: DashboardData['digest']): string {
     </section>`
 }
 
-function barList(items: { label: string; value: number }[], suffix = ''): string {
-  if (items.length === 0) return '<p class="muted">No data</p>'
-  const max = Math.max(...items.map(item => item.value), 1)
-  return `<div class="bars">${items.map(item => `
-    <div class="bar-row">
-      <span class="bar-label">${escapeHtml(item.label)}</span>
-      <span class="bar-track"><span class="bar-fill" style="width: ${(item.value / max) * 100}%"></span></span>
-      <span class="bar-value">${item.value}${suffix}</span>
-    </div>`).join('')}</div>`
-}
-
-function metricsSection(metrics: Metrics): string {
-  if (metrics.totalCommits === 0 && metrics.notesTaken === 0) return ''
-
-  const tile = (value: string, label: string) => `
-    <div class="metric-tile">
-      <span class="metric-value">${escapeHtml(value)}</span>
-      <span class="metric-label">${escapeHtml(label)}</span>
-    </div>`
-
-  const tiles = [
-    tile(pct(metrics.atomicCommitRatio), 'Atomic commits'),
-    tile(`${metrics.averageCommitSize}`, 'Avg commit size (lines)'),
-    tile(pct(metrics.testRatio), 'Test ratio'),
-    tile(pct(metrics.refactorRatio), 'Refactor ratio'),
-    tile(pct(metrics.documentationRatio), 'Documentation ratio'),
-    tile(`${metrics.repositories}`, metrics.repositories === 1 ? 'Repository' : 'Repositories'),
-  ].join('')
-
+function highlightCard(highlight: DashboardHighlight): string {
   return `
-    <section class="dashboard-section">
-      <h2>Metrics</h2>
-      <div class="metric-grid">${tiles}</div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <h3>Commits by type</h3>
-          ${barList(metrics.commitsByType.map(item => ({ label: item.type, value: item.count })))}
-        </div>
-        <div class="chart-card">
-          <h3>Languages</h3>
-          ${barList(metrics.languages.map(item => ({ label: item.language, value: item.files })))}
-        </div>
-      </div>
-    </section>`
-}
-
-function highlightsSection(highlights: DashboardData['highlights']): string {
-  if (highlights.length === 0) return ''
-
-  const cards = highlights.map(highlight => `
-    <article class="highlight-card">
-      <header class="highlight-head">
-        <span class="highlight-title"><span class="ai-badge">AI</span>${escapeHtml(highlight.title)}</span>
-        <span class="pill highlight-repo">${escapeHtml(highlight.repo)}</span>
-      </header>
-      <div class="highlight-body">
-        <pre class="code-panel"><code class="language-${escapeHtml(highlight.language)}">${escapeHtml(highlight.code)}</code></pre>
-        ${highlight.diagram ? `<pre class="mermaid">${escapeHtml(highlight.diagram)}</pre>` : ''}
-      </div>
-    </article>`).join('')
-
-  return `
-    <section class="dashboard-section">
-      <h2>Code highlights</h2>
-      <div class="highlight-grid">${cards}</div>
-    </section>`
+        <article class="highlight-card">
+          <header class="highlight-head">
+            <span class="highlight-title"><span class="ai-badge">AI</span>${escapeHtml(highlight.title)}</span>
+          </header>
+          <div class="highlight-body">
+            <pre class="code-panel"><code class="language-${escapeHtml(highlight.language)}">${escapeHtml(highlight.code)}</code></pre>
+            ${highlight.diagram ? `<pre class="mermaid">${escapeHtml(highlight.diagram)}</pre>` : ''}
+          </div>
+        </article>`
 }
 
 function repoSection(repos: DashboardData['repos']): string {
   if (repos.length === 0) return ''
 
-  const repoCards = repos.map(repo => `
-      <article class="entry-card accent-blue">
+  const repoCards = repos.map(repo => {
+    const productChanges = repo.productChanges.length > 0
+      ? `<div class="product-changes">
+          <span class="block-label">What changed in the product</span>
+          <ul class="changes">${repo.productChanges.map(change => `<li>${escapeHtml(change)}</li>`).join('')}</ul>
+        </div>`
+      : ''
+    const highlights = repo.highlights.length > 0
+      ? `<div class="repo-highlights">
+          <span class="block-label">Code highlights</span>
+          <div class="highlight-grid">${repo.highlights.map(highlightCard).join('')}</div>
+        </div>`
+      : ''
+
+    return `
+      <article class="repo-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="${escapeHtml(repo.url)}" target="_blank" rel="noopener">${escapeHtml(repo.name)}</a>
-          <span class="head-meta">
-            <span class="diffstat"><span class="add">+${repo.additions}</span> <span class="del">−${repo.deletions}</span></span>
-            <span class="pill">${repo.totalCommits} commit${repo.totalCommits === 1 ? '' : 's'}</span>
-          </span>
+          ${repo.product ? `<span class="repo-product">${escapeHtml(repo.product)}</span>` : ''}
         </header>
-        ${repo.evaluation ? `<p class="repo-evaluation"><span class="ai-badge">AI</span>${escapeHtml(repo.evaluation)}</p>` : ''}
-        <ul class="commits">
-          ${repo.commits.map(commit => `<li>${escapeHtml(commit)}</li>`).join('')}
-        </ul>
+        ${repo.summary ? `<p class="repo-evaluation"><span class="ai-badge">AI</span>${escapeHtml(repo.summary)}</p>` : ''}
+        ${productChanges}
+        ${highlights}
         <a class="diff-link" href="${escapeHtml(repo.diffUrl)}" target="_blank" rel="noopener">View full diff &rarr;</a>
-      </article>`).join('')
+      </article>`
+  }).join('')
 
   return `
     <section class="dashboard-section">
-      <h2>Commits by repository</h2>
-      <div class="entry-grid">${repoCards}</div>
+      <h2>Product updates by repository</h2>
+      <div class="repo-stack">${repoCards}</div>
     </section>`
 }
 
@@ -212,9 +163,10 @@ function notesSection(notes: DashboardData['notes']): string {
 }
 
 export function renderDashboard(data: DashboardData): string {
-  const hasActivity = data.highlights.length > 0 || data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
-  const hasHighlights = data.highlights.length > 0
-  const hasDiagram = data.highlights.some(highlight => Boolean(highlight.diagram))
+  const allHighlights = data.repos.flatMap(repo => repo.highlights)
+  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
+  const hasHighlights = allHighlights.length > 0
+  const hasDiagram = allHighlights.some(highlight => Boolean(highlight.diagram))
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -392,6 +344,24 @@ export function renderDashboard(data: DashboardData): string {
     .mermaid { margin: 0; display: flex; align-items: center; justify-content: center; background: #10131a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; overflow-x: auto; min-height: 120px; }
     .mermaid svg { max-width: 100%; height: auto; }
 
+    /* Repo cards — full-width product updates */
+    .repo-stack { display: flex; flex-direction: column; gap: 16px; }
+    .repo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+    }
+    .repo-product { font-size: 13.5px; font-weight: 500; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+    .block-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+    .product-changes { margin: 0 0 14px; }
+    .changes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .changes li { position: relative; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary); word-break: break-word; }
+    .changes li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: 600; }
+    .repo-highlights { margin: 0 0 14px; }
+
     /* Repo cards */
     .entry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .entry-title { font-size: 16px; font-weight: 600; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 8px; word-break: break-word; }
@@ -443,8 +413,6 @@ export function renderDashboard(data: DashboardData): string {
       <span class="week-pill">${escapeHtml(data.week)}</span>
     </header>
     ${digestSection(data.digest)}
-    ${highlightsSection(data.highlights)}
-    ${metricsSection(data.metrics)}
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
     ${forksSection(data.forks)}
