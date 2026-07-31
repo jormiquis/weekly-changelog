@@ -240,13 +240,13 @@
   <div class="page">
     <header class="page-header">
       <h1>Weekly Changelog</h1>
-      <span class="week-pill">Week of Jul 25</span>
+      <span class="week-pill">Week of Jul 26</span>
     </header>
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
-      <h2 class="digest-headline">Weekly changelog now highlights code patterns and simplifies posts</h2>
-      <p class="digest-summary">A new digest feature surfaces design patterns from weekly diffs. LinkedIn post generation streamlined and code snippets added to the dashboard.</p>
+      <h2 class="digest-headline">Product-focused changelog with refined card layout</h2>
+      <p class="digest-summary">A work diary project received a visual overhaul and clearer product language. The week focused on improving user-facing presentation and summarizing technical decisions without engineering jargon.</p>
     </section>
     
     <section class="dashboard-section">
@@ -257,60 +257,34 @@
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
           <span class="repo-product">a work diary project</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The digest now automatically identifies and presents design patterns and architectural decisions from weekly code changes. A new LinkedIn post builder simplifies publication by focusing on raw facts and dashboard links. Syntax highlighting support was added to the dashboard for better code readability.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>The card layout was restructured to prioritize product language over engineering metrics. A new visual style for repository cards was introduced, featuring full-width updates and clear product context. The underlying data model was simplified to focus on user-facing outcomes rather than technical activity.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>code patterns surfaced in weekly digest</li><li>LinkedIn post generation simplified</li><li>syntax highlighting added to dashboard</li><li>code snippets included in digest</li></ul>
+          <ul class="changes"><li>introduced full-width repository update cards</li><li>added product context labels to each repository</li><li>removed engineering metrics from the card display</li><li>simplified the change description format</li></ul>
         </div>
         <div class="repo-highlights">
           <span class="block-label">Code highlights</span>
           <div class="highlight-grid">
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Code diff truncation for model context</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Composition over inheritance</span>
           </header>
           <div class="highlight-body">
-            <pre class="code-panel"><code class="language-typescript">const MAX_PATCH_CHARS_PER_FILE = 1600
-const MAX_FILES = 14
-const MAX_DIFF_CHARS = 9000
-
-function buildCodeDiffs(activities: Activity[]): string {
-  const blocks: string[] = []
-  let fileCount = 0
-  let totalChars = 0
-
-  for (const activity of activities) {
-    const meta = activity.metaData
-    if (!isPushEvent(meta)) continue
-
-    const repo = repoShortName(meta.repo.name)
-
-    for (const file of meta.files ?? []) {
-      if (!file.patch || NOISE_PATH.test(file.filename)) continue
-      if (fileCount &gt;= MAX_FILES || totalChars &gt;= MAX_DIFF_CHARS) break
-
-      const patch = file.patch.length &gt; MAX_PATCH_CHARS_PER_FILE
-        ? `${file.patch.slice(0, MAX_PATCH_CHARS_PER_FILE)}\n… (truncated)`
-        : file.patch
-
-      const block = `# repo: ${repo}\n# file: ${file.filename}\n${patch}`
-      blocks.push(block)
-      fileCount++
-      totalChars += block.length
-    }
-  }
-
-  return blocks.join(&#39;\n\n&#39;)
+            <pre class="code-panel"><code class="language-typescript">interface CardData {
+  week: string
+  version: string
+  workedOn: string[]
+  decisions: string[]
+  learnings: string[]
 }</code></pre>
             <pre class="mermaid">flowchart TD
-  A[Raw Diff] --&gt; B[Filter Noise]
-  B --&gt; C[Truncate Files]
-  C --&gt; D[Respect Context Limit]
-  D --&gt; E[Compact Diff Block]</pre>
+  A[CardData] --&gt; B[workedOn]
+  A --&gt; C[decisions]
+  A --&gt; D[learnings]</pre>
           </div>
         </article></div>
         </div>
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/6d3f114538ac3e566b7e071236f82abbea728124...bb72dd3fc0e147931c7acb8755e1e6cbc8ec7d8b.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/7180d29c818aa7af327999f36e51365f76b6cafa...77336975818622a187a48c387cde4267012ecbc6.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
@@ -322,17 +296,41 @@ function buildCodeDiffs(activities: Activity[]): string {
       <div class="entry-grid">
       <article class="entry-card accent-magenta">
         <header class="entry-head">
+          <span class="entry-title"><span class="emoji">📝</span>Practical Tips on How to use ClaudeCode By Boris Cherny</span>
+        </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A guide on effectively using ClaudeCode for development workflows and productivity.</p>
+        <div class="tags"><span class="tag">AI</span><span class="tag">Claude code</span><span class="tag">outside-in</span><span class="tag">specification-by-example</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://youtu.be/M8HuXu_bOco?si=-iNcyhQx0nTzn9JB" target="_blank" rel="noopener">https://youtu.be/M8HuXu_bOco?si=-iNcyhQx0nTzn9JB</a></div>
+      </article>
+      <article class="entry-card accent-magenta">
+        <header class="entry-head">
+          <span class="entry-title"><span class="emoji">📝</span>responsibilities and collaborations kata</span>
+        </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>An exercise focused on clarifying team roles and improving collaboration practices.</p>
+        <div class="tags"><span class="tag">modeling</span><span class="tag">kata</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://emmanuelvalverderamos.substack.com/p/kata-1-conference-scheduler?img=https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F468b4f01-6638-4007-87cc-b69bf18cdf8b_3547x140.png&amp;open=false" target="_blank" rel="noopener">https://emmanuelvalverderamos.substack.com/p/kata-1-conference-scheduler?img=https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F468b4f01-6638-4007-87cc-b69bf18cdf8b_3547x140.png&amp;open=false</a></div>
+      </article>
+      <article class="entry-card accent-magenta">
+        <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>Codely Git - Introducción y trabajo en equipo</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note introducing Git basics and team collaboration workflows for onboarding purposes</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A resource introducing Git workflows and team collaboration in software development.</p>
         <div class="tags"><span class="tag">courses</span><span class="tag">good-practices</span><span class="tag">git</span></div>
         <div class="sources"><span class="sources-label">Sources</span><a href="https://codely.com/" target="_blank" rel="noopener">https://codely.com/</a></div>
+      </article>
+      <article class="entry-card accent-magenta">
+        <header class="entry-head">
+          <span class="entry-title"><span class="emoji">📝</span>advanced git exercises</span>
+        </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Challenging exercises designed to deepen understanding of Git and version control.</p>
+        <div class="tags"><span class="tag">git</span><span class="tag">good-practices</span><span class="tag">kata</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://github.com/jormiquis/advanced-git-kata" target="_blank" rel="noopener">https://github.com/jormiquis/advanced-git-kata</a><a href="https://git-scm.com/docs/git-add" target="_blank" rel="noopener">https://git-scm.com/docs/git-add</a></div>
       </article></div>
     </section>
     
   </div>
   <footer>
-    Generated Jul 25, 10:10 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Jul 26, 10:47 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>

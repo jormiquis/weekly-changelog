@@ -25,8 +25,8 @@ const digest: SynthesizedDigest = {
     summary: 'The changelog now turns the week into a product-oriented digest.',
     productChanges: ['AI-written weekly digest', 'Dashboard product updates'],
     highlights: [
-      { title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
-      { title: 'Ports & adapters boundary', code: 'interface Sender {}', language: 'typescript' },
+      { title: 'Provider fallback chain', alternative: 'a single hardcoded provider', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+      { title: 'Ports & adapters boundary', alternative: 'leaking infrastructure into the domain', code: 'interface Sender {}', language: 'typescript' },
     ],
   }],
   notes: [{ title: 'Ports & adapters', summary: 'Boundaries between domain and infra.' }],
@@ -53,8 +53,8 @@ describe('buildDashboardData', () => {
     expect(repo.summary).toBe('The changelog now turns the week into a product-oriented digest.');
     expect(repo.productChanges).toEqual(['AI-written weekly digest', 'Dashboard product updates']);
     expect(repo.highlights).toEqual([
-      { title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
-      { title: 'Ports & adapters boundary', code: 'interface Sender {}', language: 'typescript' },
+      { title: 'Provider fallback chain', alternative: 'a single hardcoded provider', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' },
+      { title: 'Ports & adapters boundary', alternative: 'leaking infrastructure into the domain', code: 'interface Sender {}', language: 'typescript' },
     ]);
   });
 

@@ -101,7 +101,7 @@ sequenceDiagram
     participant TG as Telegram
     participant LI as LinkedIn
 
-    Cron->>Main: npm run weekly (Wed 08:00 UTC)
+    Cron->>Main: npm run weekly (Wed 07:25 UTC)
     par Fetch activity (last 7 days)
         Main->>GH: public push & create events
         GH-->>Main: commits, new repos
@@ -224,7 +224,7 @@ npm run dev        # tsx src/main.ts
 ### 4. Automated weekly run (GitHub Actions)
 
 The workflow `.github/workflows/generate-weekly-post.yml` runs every **Wednesday at
-08:00 UTC** (and on manual `workflow_dispatch`). Configure in your repo:
+07:25 UTC**. Configure in your repo:
 
 - **Secrets:** `GH_TOKEN`, `NOTION_API_KEY`, `MISTRAL_API_KEY`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`, `LINKEDIN_ACCESS_TOKEN`
 - **Variables:** `USERNAME`, `NOTION_DATABASE_ID`, `TELEGRAM_CHAT_ID`, `LINKEDIN_AUTHOR_URN`

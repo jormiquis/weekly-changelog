@@ -62,6 +62,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
         productChanges: repoDigest?.productChanges ?? [],
         highlights: (repoDigest?.highlights ?? []).map(highlight => ({
           title: highlight.title,
+          alternative: highlight.alternative,
           code: highlight.code,
           language: highlight.language,
           ...(highlight.diagram && highlight.diagram.trim().length > 0 ? { diagram: highlight.diagram } : {})

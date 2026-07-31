@@ -1,6 +1,8 @@
 export interface DashboardHighlight {
   /** The design pattern / architectural decision, enunciated. */
   title: string
+  /** The alternative discarded in favour of this decision. */
+  alternative: string
   /** Attractive, self-contained code snippet. */
   code: string
   /** Language for syntax highlighting, e.g. "typescript". */

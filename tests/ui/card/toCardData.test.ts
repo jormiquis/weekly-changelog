@@ -17,7 +17,7 @@ const digest: SynthesizedDigest = {
       workedOnLine: 'added a new login flow on a web app',
       summary: 'The web app gained a new login flow and a dropdown fix.',
       productChanges: ['New login flow', 'Dropdown bug fixed'],
-      highlights: [{ title: 'Composition over inheritance', code: 'interface Sender {}', language: 'typescript' }],
+      highlights: [{ title: 'Composition over inheritance', alternative: 'class inheritance', code: 'interface Sender {}', language: 'typescript' }],
     },
     {
       repo: 'api',
@@ -25,7 +25,7 @@ const digest: SynthesizedDigest = {
       workedOnLine: 'exposed a users endpoint on a REST API',
       summary: 'The API now exposes a users endpoint.',
       productChanges: ['Users endpoint'],
-      highlights: [{ title: 'Provider fallback chain', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }],
+      highlights: [{ title: 'Provider fallback chain', alternative: 'a single hardcoded provider', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }],
     },
   ],
   notes: [
@@ -57,7 +57,7 @@ describe('buildCardData', () => {
       ...digest,
       repos: digest.repos.map(repo => ({
         ...repo,
-        highlights: [{ title: 'Composition over inheritance', code: 'x', language: 'ts' }],
+        highlights: [{ title: 'Composition over inheritance', alternative: 'class inheritance', code: 'x', language: 'ts' }],
       })),
     };
 
@@ -83,7 +83,7 @@ describe('buildCardData', () => {
         workedOnLine: `line ${name}`,
         summary: `summary ${name}`,
         productChanges: [`change ${name}`],
-        highlights: [{ title: `decision ${i}`, code: 'x', language: 'ts' }],
+        highlights: [{ title: `decision ${i}`, alternative: `alt ${i}`, code: 'x', language: 'ts' }],
       })),
     };
     const activities = [note('n1'), note('n2'), note('n3')];

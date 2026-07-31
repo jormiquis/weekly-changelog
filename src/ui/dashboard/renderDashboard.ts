@@ -30,6 +30,7 @@ function highlightCard(highlight: DashboardHighlight): string {
           <header class="highlight-head">
             <span class="highlight-title"><span class="ai-badge">AI</span>${escapeHtml(highlight.title)}</span>
           </header>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">${escapeHtml(highlight.alternative)}</span></p>
           <div class="highlight-body">
             <pre class="code-panel"><code class="language-${escapeHtml(highlight.language)}">${escapeHtml(highlight.code)}</code></pre>
             ${highlight.diagram ? `<pre class="mermaid">${escapeHtml(highlight.diagram)}</pre>` : ''}
@@ -49,7 +50,7 @@ function repoSection(repos: DashboardData['repos']): string {
       : ''
     const highlights = repo.highlights.length > 0
       ? `<div class="repo-highlights">
-          <span class="block-label">Code highlights</span>
+          <span class="block-label">Decisions</span>
           <div class="highlight-grid">${repo.highlights.map(highlightCard).join('')}</div>
         </div>`
       : ''
@@ -335,6 +336,9 @@ export function renderDashboard(data: DashboardData): string {
     .highlight-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
     .highlight-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--text-primary); }
     .highlight-repo { color: var(--accent-purple); background: var(--accent-purple-bg); }
+    .decision-tradeoff { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: -6px 0 0; font-size: 13px; }
+    .tradeoff-label { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+    .tradeoff-discarded { color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--accent-purple); text-decoration-thickness: 1.5px; }
     .highlight-body { display: grid; grid-template-columns: 1fr; gap: 14px; }
     @media (min-width: 720px) { .highlight-body:has(.mermaid) { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; } }
 

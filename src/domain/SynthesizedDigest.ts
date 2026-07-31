@@ -1,6 +1,11 @@
 export interface CodeHighlight {
   /** The design pattern / architectural decision, enunciated — never explained. */
   title: string
+  /**
+   * The alternative that was discarded in favour of this decision, enunciated as
+   * a bare noun phrase — e.g. "class inheritance", "a single hardcoded provider".
+   */
+  alternative: string
   /** A short, attractive, self-contained code snippet distilled from the diff. */
   code: string
   /** Language for syntax highlighting, e.g. "typescript". */
@@ -62,6 +67,7 @@ function isCodeHighlight(value: unknown): value is CodeHighlight {
   const candidate = value as Record<string, unknown>
 
   return isNonEmptyString(candidate.title)
+    && isNonEmptyString(candidate.alternative)
     && isNonEmptyString(candidate.code)
     && isNonEmptyString(candidate.language)
     && (candidate.diagram === undefined || typeof candidate.diagram === 'string')
