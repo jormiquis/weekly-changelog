@@ -1,5 +1,5 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from '../../domain/ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isLearningEntry, isWorkEntry } from '../../domain/ActivityMeta.js';
 import type { RepoDigest, SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { DashboardCreatedRepo, DashboardData, DashboardFork, DashboardNote, DashboardPullRequest, DashboardRepo } from './DashboardData.js';
 
@@ -106,7 +106,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
 
   const notes: DashboardNote[] = activities
     .map(activity => activity.metaData)
-    .filter(isNotionEntry)
+    .filter(isLearningEntry)
     .map(meta => {
       const summary = summaryByNote.get(meta.title);
 
@@ -119,6 +119,18 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
       }
     });
 
+  const workItems = activities
+    .map(activity => activity.metaData)
+    .filter(isWorkEntry)
+    .map(meta => meta.title);
+
+  // The AI work summary is meaningless without any work entries to summarize.
+  const workSummary = workItems.length > 0 ? options.digest?.work?.summary?.trim() : undefined;
+  const work = {
+    items: workItems,
+    ...(workSummary ? { summary: workSummary } : {})
+  };
+
   return {
     week: options.week,
     generatedAt: formatGeneratedAt(new Date()),
@@ -127,6 +139,7 @@ export function buildDashboardData(activities: Activity[], options: BuildDashboa
     forks,
     pullRequests,
     notes,
+    work,
     ...(options.digest ? { digest: { headline: options.digest.headline, summary: options.digest.summary } } : {})
   }
 }

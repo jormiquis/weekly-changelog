@@ -1,5 +1,5 @@
 import type { Activity } from './Activity.js';
-import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isNotionEntry } from './ActivityMeta.js';
+import { isPushEvent, isCreateRepoEvent, isForkEvent, isPullRequestEvent, isLearningEntry, isWorkEntry } from './ActivityMeta.js';
 
 function repoShortName(fullName: string): string {
   return fullName.split('/').pop() ?? fullName
@@ -24,8 +24,15 @@ function groupCommitsByRepo(activities: Activity[]): Map<string, string[]> {
 function noteTitles(activities: Activity[]): string[] {
   return activities
     .map(activity => activity.metaData)
-    .filter(isNotionEntry)
+    .filter(isLearningEntry)
     .map(note => note.title)
+}
+
+function workTitles(activities: Activity[]): string[] {
+  return activities
+    .map(activity => activity.metaData)
+    .filter(isWorkEntry)
+    .map(entry => entry.title)
 }
 
 function createdRepoLines(activities: Activity[]): string[] {
@@ -94,10 +101,12 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
   const commitsByRepo = groupCommitsByRepo(activities);
   const repoNames = [...commitsByRepo.keys()];
   const titles = noteTitles(activities);
+  const work = workTitles(activities);
 
   const repoLines = [...commitsByRepo.entries()].map(([repo, messages]) => `${repo}: ${messages.length} commit(s) — ${messages.join('; ')}`);
   const noteLines = titles.map(title => `Note: "${title}"`);
-  const activityLines = [...repoLines, ...createdRepoLines(activities), ...forkLines(activities), ...pullRequestLines(activities), ...noteLines];
+  const workLines = work.map(title => `Work log (day job): "${title}"`);
+  const activityLines = [...repoLines, ...createdRepoLines(activities), ...forkLines(activities), ...pullRequestLines(activities), ...noteLines, ...workLines];
   const codeDiffs = buildCodeDiffs(activities);
 
   return [
@@ -111,7 +120,7 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     codeDiffs.length > 0 ? codeDiffs : '(no code diffs available)',
     '',
     'Respond with ONLY strict JSON (no markdown fences, no commentary) matching exactly this shape:',
-    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "workedOnLine": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "notes": [{"title": string, "summary": string}]}',
+    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "workedOnLine": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "notes": [{"title": string, "summary": string}], "work": {"summary": string, "bullets": [string]}}',
     '',
     'Tone constraints, apply to every prose field:',
     '- Impersonal. Use nominal phrases or neutral/passive constructions.',
@@ -136,6 +145,12 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     '      "diagram": a SIMPLE, valid mermaid diagram (flowchart, e.g. "flowchart LR\\n  A[Domain] --> B[Port] --> C[Adapter]") illustrating the pattern with 3-6 nodes. Use "" only if a diagram truly does not fit.',
     titles.length > 0
       ? `- notes: exactly one entry per note listed above (${titles.length} note(s)). "title" is the note title copied VERBATIM, and "summary" is 1 sentence (max 25 words) summarizing what the note is about.`
-      : '- notes: empty array, since no notes were captured this week.'
+      : '- notes: empty array, since no notes were captured this week.',
+    work.length > 0
+      ? `- work.summary: 2-3 sentences summarizing the day-job work from the ${work.length} "Work log (day job)" item(s) above. Same impersonal, outcome-oriented tone as the rest; describe what was accomplished at work, not who did it. Do NOT invent details beyond the item titles.`
+      : '- work.summary: "" — empty, since there was no day-job work logged this week.',
+    work.length > 0
+      ? `- work.bullets: the 1 to 3 MOST IMPORTANT day-job items, each rewritten as ONE short, self-contained bullet that fits on a small card (max ~9 words, nominal phrase, no trailing period). If there are more than 3 items, select the most impactful; if fewer, summarize each. Same impersonal tone.`
+      : '- work.bullets: [] — empty array, since there was no day-job work logged this week.'
   ].join('\n')
 }

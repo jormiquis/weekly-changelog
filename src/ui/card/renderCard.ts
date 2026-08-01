@@ -26,14 +26,25 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
 }
 
 const WORKED_ON_ACCENT = '#2fae2f'
+const AT_WORK_ACCENT = '#a78bfa'
 const DECISIONS_ACCENT = '#e0a53b'
 const LEARNINGS_ACCENT = '#d55181'
 const VERSION_ACCENT = '#3987e5'
 const COLUMN_GAP = 22
-const COLUMN_WIDTH = 349
+const OUTER_PADDING_X = 56 // matches the card body's horizontal padding
 const COLUMN_PADDING_X = 26
-const BULLET_TEXT_WIDTH = COLUMN_WIDTH - COLUMN_PADDING_X * 2 // minus horizontal padding
-const CHARS_PER_LINE = 25 // approx chars that fit one line at the bullet font size
+// px of bullet text per character at the 21px font, derived from the 3-column baseline (297px ≈ 25 chars).
+const BASELINE_CHAR_PX = 297 / 25
+
+/** The width of the three sizing quantities a column needs, derived from the column count. */
+interface ColumnLayout { width: number; textWidth: number; charsPerLine: number }
+
+function computeLayout(count: number, contentWidth: number): ColumnLayout {
+  const width = Math.floor((contentWidth - (count - 1) * COLUMN_GAP) / count)
+  const textWidth = width - COLUMN_PADDING_X * 2
+  const charsPerLine = Math.max(8, Math.round(textWidth / BASELINE_CHAR_PX))
+  return { width, textWidth, charsPerLine }
+}
 
 interface SatoriNode {
   type: string
@@ -61,23 +72,23 @@ function hexToRgba(hex: string, alpha: number): string {
 const LINE_PX = 38
 
 /** Estimated rendered lines for a "•  {value}" bullet (accounts for word wrap, no ellipsis). */
-function bulletLines(value: string): number {
-  return Math.max(1, Math.ceil((value.length + 3) / CHARS_PER_LINE))
+function bulletLines(value: string, charsPerLine: number): number {
+  return Math.max(1, Math.ceil((value.length + 3) / charsPerLine))
 }
 
 /** Total rendered lines a column of bullets occupies (min 1 for the empty placeholder). */
-export function columnLineCount(bullets: string[]): number {
+function columnLineCount(bullets: string[], charsPerLine: number): number {
   if (bullets.length === 0) return 1
-  return bullets.reduce((sum, value) => sum + bulletLines(value), 0)
+  return bullets.reduce((sum, value) => sum + bulletLines(value, charsPerLine), 0)
 }
 
-function column(theme: CardTheme, accent: string, emoji: string, title: string, bullets: string[], height: number): SatoriNode {
+function column(theme: CardTheme, accent: string, emoji: string, title: string, bullets: string[], height: number, layout: ColumnLayout): SatoriNode {
   const shown = bullets.length > 0 ? bullets : ['—']
   const bulletBlock = shown.map(value => bullets.length > 0 ? `•  ${value}` : value).join('\n')
 
   return box({
     flexDirection: 'column',
-    width: `${COLUMN_WIDTH}px`,
+    width: `${layout.width}px`,
     height: `${height}px`,
     flexShrink: 0,
     gap: '18px',
@@ -90,8 +101,8 @@ function column(theme: CardTheme, accent: string, emoji: string, title: string, 
     text(`${emoji}  ${title}`, { fontSize: '18px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent }),
     // satori under-measures a hard-wrapped block, so the height is set explicitly.
     text(bulletBlock, {
-      width: `${BULLET_TEXT_WIDTH}px`,
-      height: `${columnLineCount(bullets) * LINE_PX}px`,
+      width: `${layout.textWidth}px`,
+      height: `${columnLineCount(bullets, layout.charsPerLine) * LINE_PX}px`,
       whiteSpace: 'pre-wrap',
       fontSize: '21px',
       fontWeight: 500,
@@ -121,25 +132,29 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
   const title = data.title ?? 'Changelog'
   const subtitle = data.subtitle ?? 'Weekly engineering release'
 
+  // "At work" only appears when there are day-job entries; the other three are always shown.
+  const columns = [
+    { accent: WORKED_ON_ACCENT, emoji: '🚀', title: 'Worked on', bullets: data.workedOn },
+    ...(data.atWork.length > 0 ? [{ accent: AT_WORK_ACCENT, emoji: '💼', title: 'At work', bullets: data.atWork }] : []),
+    { accent: DECISIONS_ACCENT, emoji: '🧭', title: 'Decisions', bullets: data.decisions },
+    { accent: LEARNINGS_ACCENT, emoji: '📚', title: 'Learnings', bullets: data.learnings },
+  ]
+
+  const layout = computeLayout(columns.length, theme.width - OUTER_PADDING_X * 2)
+
   // Header (~30) + gap (18) + bullet lines + vertical padding (60); all columns share the taller one.
-  const maxLines = Math.max(
-    columnLineCount(data.workedOn),
-    columnLineCount(data.decisions),
-    columnLineCount(data.learnings),
-  )
+  const maxLines = Math.max(...columns.map(c => columnLineCount(c.bullets, layout.charsPerLine)))
   // Floor keeps the columns filling the card now that the stats bar is gone; content taller than the floor still grows.
   const MIN_COLUMN_HEIGHT = 480
   const columnHeight = Math.max(30 + 18 + maxLines * LINE_PX + 60, MIN_COLUMN_HEIGHT)
 
   const svg = await satori(
     box({ width: `${theme.width}px`, height: `${theme.height}px`, background: theme.background, fontFamily: theme.fontFamily }, [
-      box({ flexDirection: 'column', width: '100%', height: '100%', padding: '52px 56px' }, [
+      box({ flexDirection: 'column', width: '100%', height: '100%', padding: `52px ${OUTER_PADDING_X}px` }, [
         header(theme, data, title, subtitle),
-        box({ flexDirection: 'row', gap: `${COLUMN_GAP}px`, marginTop: '34px' }, [
-          column(theme, WORKED_ON_ACCENT, '🚀', 'Worked on', data.workedOn, columnHeight),
-          column(theme, DECISIONS_ACCENT, '🧭', 'Decisions', data.decisions, columnHeight),
-          column(theme, LEARNINGS_ACCENT, '📚', 'Learnings', data.learnings, columnHeight),
-        ]),
+        box({ flexDirection: 'row', gap: `${COLUMN_GAP}px`, marginTop: '34px' },
+          columns.map(c => column(theme, c.accent, c.emoji, c.title, c.bullets, columnHeight, layout)),
+        ),
       ])
     ]),
     { width: theme.width, height: theme.height, fonts, loadAdditionalAsset }

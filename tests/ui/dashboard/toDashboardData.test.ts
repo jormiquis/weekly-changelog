@@ -30,7 +30,12 @@ const digest: SynthesizedDigest = {
     ],
   }],
   notes: [{ title: 'Ports & adapters', summary: 'Boundaries between domain and infra.' }],
+  work: { summary: 'Led the migration of the billing service and mentored a new hire.' },
 };
+
+function workEntry(title: string, tags = ['work']) {
+  return Activity.create(new Date(), { source: 'notion', entry_emoji: '💼', tags, sources: [], title });
+}
 
 describe('buildDashboardData', () => {
   const activities = [push('weekly-changelog', ['feat: ship it'], 120, 30)];
@@ -74,6 +79,29 @@ describe('buildDashboardData', () => {
     const dashboard = buildDashboardData(withNote, { week: 'Week of Jul 15', digest });
 
     expect(dashboard.notes[0]!.summary).toBe('Boundaries between domain and infra.');
+  });
+
+  it('collects work/brag entries into work.items with the AI summary, keeping them out of notes', () => {
+    const withWork = [
+      ...activities,
+      Activity.create(new Date(), { source: 'notion', entry_emoji: '📝', tags: [], sources: [], title: 'A learning' }),
+      workEntry('Led the billing migration'),
+      workEntry('Mentored a new hire', ['brag']),
+    ];
+
+    const dashboard = buildDashboardData(withWork, { week: 'Week of Jul 15', digest });
+
+    expect(dashboard.work.items).toEqual(['Led the billing migration', 'Mentored a new hire']);
+    expect(dashboard.work.summary).toBe('Led the migration of the billing service and mentored a new hire.');
+    // work entries are not surfaced as learnings
+    expect(dashboard.notes.map(n => n.title)).toEqual(['A learning']);
+  });
+
+  it('leaves work empty (no items, no summary) when there are no work entries', () => {
+    const dashboard = buildDashboardData(activities, { week: 'Week of Jul 15', digest });
+
+    expect(dashboard.work.items).toEqual([]);
+    expect(dashboard.work.summary).toBeUndefined();
   });
 
   it('leaves per-repo product fields empty when no digest was produced', () => {

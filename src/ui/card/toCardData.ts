@@ -1,11 +1,12 @@
 import type { Activity } from '../../domain/Activity.js';
-import { isNotionEntry } from '../../domain/ActivityMeta.js';
+import { isLearningEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 import type { CardData } from './CardData.js';
 
 const MAX_WORKED_ON = 3
 const MAX_DECISIONS = 3
 const MAX_LEARNINGS = 2
+const MAX_AT_WORK = 3
 
 /**
  * "Worked on" bullets: one product-oriented line per repo, combining the week's
@@ -30,15 +31,24 @@ function buildDecisions(digest?: SynthesizedDigest): string[] {
 }
 
 /**
- * "Learnings" bullets: the raw note titles captured this week, with NO AI
- * involved — the notes are surfaced verbatim.
+ * "Learnings" bullets: the raw learning-note titles captured this week, with NO
+ * AI involved — the notes are surfaced verbatim. Excludes day-job work entries.
  */
 function buildLearnings(activities: Activity[]): string[] {
   return activities
     .map(a => a.metaData)
-    .filter(isNotionEntry)
+    .filter(isLearningEntry)
     .map(note => note.title)
     .slice(0, MAX_LEARNINGS)
+}
+
+/**
+ * "At work" bullets: the AI's short, card-ready summaries of the most important
+ * day-job items — the raw Notion titles are often too long for the card. Empty
+ * when no digest was produced.
+ */
+function buildAtWork(digest?: SynthesizedDigest): string[] {
+  return (digest?.work?.bullets ?? []).slice(0, MAX_AT_WORK)
 }
 
 export interface BuildCardDataOptions {
@@ -54,5 +64,6 @@ export function buildCardData(activities: Activity[], options: BuildCardDataOpti
     workedOn: buildWorkedOn(options.digest),
     decisions: buildDecisions(options.digest),
     learnings: buildLearnings(activities),
+    atWork: buildAtWork(options.digest),
   }
 }

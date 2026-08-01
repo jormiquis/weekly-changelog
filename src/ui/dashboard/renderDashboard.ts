@@ -133,6 +133,21 @@ function pullRequestsSection(pullRequests: DashboardData['pullRequests']): strin
     </section>`
 }
 
+function workSection(work: DashboardData['work']): string {
+  if (work.items.length === 0) return ''
+
+  const items = `<ul class="changes">${work.items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+
+  return `
+    <section class="dashboard-section">
+      <h2>At work</h2>
+      <article class="entry-card accent-purple">
+        ${work.summary ? `<p class="repo-evaluation"><span class="ai-badge">AI</span>${escapeHtml(work.summary)}</p>` : ''}
+        ${items}
+      </article>
+    </section>`
+}
+
 function notesSection(notes: DashboardData['notes']): string {
   if (notes.length === 0) return ''
 
@@ -165,7 +180,7 @@ function notesSection(notes: DashboardData['notes']): string {
 
 export function renderDashboard(data: DashboardData): string {
   const allHighlights = data.repos.flatMap(repo => repo.highlights)
-  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0
+  const hasActivity = data.repos.length > 0 || data.createdRepos.length > 0 || data.forks.length > 0 || data.pullRequests.length > 0 || data.notes.length > 0 || data.work.items.length > 0
   const hasHighlights = allHighlights.length > 0
   const hasDiagram = allHighlights.some(highlight => Boolean(highlight.diagram))
 
@@ -298,6 +313,7 @@ export function renderDashboard(data: DashboardData): string {
     .accent-green { --accent: var(--accent-green); --accent-bg: var(--accent-green-bg); }
     .accent-magenta { --accent: var(--accent-magenta); --accent-bg: var(--accent-magenta-bg); }
     .accent-yellow { --accent: var(--accent-yellow); --accent-bg: var(--accent-yellow-bg); }
+    .accent-purple { --accent: var(--accent-purple); --accent-bg: var(--accent-purple-bg); }
 
     /* Digest hero */
     .digest-hero {
@@ -417,6 +433,7 @@ export function renderDashboard(data: DashboardData): string {
       <span class="week-pill">${escapeHtml(data.week)}</span>
     </header>
     ${digestSection(data.digest)}
+    ${workSection(data.work)}
     ${repoSection(data.repos)}
     ${createdReposSection(data.createdRepos)}
     ${forksSection(data.forks)}

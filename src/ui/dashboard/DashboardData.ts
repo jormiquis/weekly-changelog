@@ -63,6 +63,13 @@ export interface DashboardDigest {
   summary: string
 }
 
+export interface DashboardWork {
+  /** AI summary of the week's day-job work, when a digest was produced. */
+  summary?: string
+  /** Day-job entry titles (Notion "work"/"brag" entries), surfaced verbatim. */
+  items: string[]
+}
+
 export interface DashboardData {
   week: string
   generatedAt: string
@@ -71,5 +78,6 @@ export interface DashboardData {
   forks: DashboardFork[]
   pullRequests: DashboardPullRequest[]
   notes: DashboardNote[]
+  work: DashboardWork
   digest?: DashboardDigest
 }

@@ -212,6 +212,15 @@ LINKEDIN_AUTHOR_URN=   # e.g. urn:li:person:xxxxxxxx
 DASHBOARD_URL=
 ```
 
+### Notion entry tags
+
+Notion entries are split by tag:
+
+- Entries tagged **`work`** and/or **`brag`** become the **At work** section — day-job
+  accomplishments. Their titles show as bullets on the card, and the dashboard adds an
+  AI-written summary. Give them an explanatory title; sources are optional.
+- Any other entry is surfaced as a **Learning** (title + AI summary).
+
 ### 3. Run locally
 
 ```bash

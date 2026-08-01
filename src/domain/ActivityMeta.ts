@@ -82,3 +82,16 @@ export function isPullRequestEvent(metaData: Record<string, unknown>): metaData 
 export function isNotionEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {
   return metaData.source === 'notion'
 }
+
+/** Notion tags that mark an entry as day-job work rather than a personal learning. */
+const WORK_TAGS = new Set(['work', 'brag'])
+
+/** A Notion entry tagged as day-job work (tag "work" and/or "brag"), case-insensitive. */
+export function isWorkEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {
+  return isNotionEntry(metaData) && metaData.tags.some(tag => WORK_TAGS.has(tag.toLowerCase()))
+}
+
+/** A Notion entry that is NOT day-job work — surfaced as a "learning". */
+export function isLearningEntry(metaData: Record<string, unknown>): metaData is NotionEntryMeta {
+  return isNotionEntry(metaData) && !isWorkEntry(metaData)
+}

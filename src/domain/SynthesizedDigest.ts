@@ -42,13 +42,28 @@ export interface NoteSummary {
   summary: string
 }
 
+export interface WorkDigest {
+  /**
+   * Impersonal, outcome-oriented summary of the week's day-job work, synthesized
+   * from the "work"/"brag" Notion entries. Empty string when there were none.
+   */
+  summary: string
+  /**
+   * The 1-3 most important day-job items, each AI-summarized into a single short,
+   * card-ready bullet (the raw entry titles are often too long for the card).
+   */
+  bullets?: string[]
+}
+
 export interface SynthesizedDigest {
   headline: string
   summary: string
   /** Per-repository digest, one entry per repo that had commits this week. */
   repos: RepoDigest[]
-  /** Per-note summaries, one entry per note captured this week. */
+  /** Per-note summaries, one entry per learning note captured this week. */
   notes: NoteSummary[]
+  /** AI summary of the week's day-job work. Absent when no work entries exist. */
+  work?: WorkDigest
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -96,6 +111,16 @@ function isNoteSummary(value: unknown): value is NoteSummary {
     && isNonEmptyString(candidate.summary)
 }
 
+// The model may omit `work` entirely, or return { summary: "" } when there are no
+// work entries — both are valid; only a non-string summary is rejected.
+function isWorkDigest(value: unknown): value is WorkDigest {
+  if (typeof value !== 'object' || value === null) return false
+
+  const candidate = value as Record<string, unknown>
+  return typeof candidate.summary === 'string'
+    && (candidate.bullets === undefined || isStringArray(candidate.bullets))
+}
+
 export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest {
   if (typeof value !== 'object' || value === null) return false
 
@@ -107,4 +132,5 @@ export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest 
     && candidate.repos.every(isRepoDigest)
     && Array.isArray(candidate.notes)
     && candidate.notes.every(isNoteSummary)
+    && (candidate.work === undefined || isWorkDigest(candidate.work))
 }

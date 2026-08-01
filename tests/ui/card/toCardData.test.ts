@@ -7,6 +7,10 @@ function note(title: string) {
   return Activity.create(new Date(), { source: 'notion', entry_emoji: '📝', tags: [], sources: [], title });
 }
 
+function work(title: string, tags = ['work']) {
+  return Activity.create(new Date(), { source: 'notion', entry_emoji: '💼', tags, sources: [], title });
+}
+
 const digest: SynthesizedDigest = {
   headline: 'A focused week',
   summary: 'Steady progress across a few products.',
@@ -31,6 +35,10 @@ const digest: SynthesizedDigest = {
   notes: [
     { title: 'Ports & adapters', summary: 'Boundaries between domain and infra' },
   ],
+  work: {
+    summary: 'Led the billing migration and mentored a new hire.',
+    bullets: ['Led the billing migration', 'Mentored a new hire'],
+  },
 };
 
 describe('buildCardData', () => {
@@ -105,5 +113,31 @@ describe('buildCardData', () => {
     expect(card.decisions).toEqual([]);
     // Learnings never depend on the digest.
     expect(card.learnings).toEqual(['A note']);
+    expect(card.atWork).toEqual([]);
+  });
+
+  it('builds "atWork" from the AI work bullets, not the raw entry titles', () => {
+    const card = buildCardData([], { week: 'Week of Jul 15', digest });
+
+    expect(card.atWork).toEqual(['Led the billing migration', 'Mentored a new hire']);
+  });
+
+  it('keeps work/brag entries out of learnings', () => {
+    const activities = [note('A learning'), work('A long day-job title that would overflow the card')];
+
+    const card = buildCardData(activities, { week: 'Week of Jul 15', digest });
+
+    expect(card.learnings).toEqual(['A learning']);
+  });
+
+  it('caps atWork at three', () => {
+    const wideDigest: SynthesizedDigest = {
+      ...digest,
+      work: { summary: 's', bullets: ['w1', 'w2', 'w3', 'w4'] },
+    };
+
+    const card = buildCardData([], { week: 'Week of Jul 15', digest: wideDigest });
+
+    expect(card.atWork).toEqual(['w1', 'w2', 'w3']);
   });
 });

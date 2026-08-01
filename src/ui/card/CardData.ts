@@ -5,8 +5,10 @@ export interface CardData {
   workedOn: string[]
   /** Factual technical decisions distilled from the diffs (no location). */
   decisions: string[]
-  /** Raw note titles captured this week — no AI involved. */
+  /** Raw learning-note titles captured this week — no AI involved. */
   learnings: string[]
+  /** Day-job highlights: AI-summarized short bullets of the most important work entries. */
+  atWork: string[]
   title?: string
   subtitle?: string
 }
