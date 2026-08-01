@@ -18,7 +18,7 @@ export function buildPost(options: BuildPostOptions): Post {
 
   const lines: string[] = [`📋 Weekly personal work diary — ${version}`, '']
 
-  lines.push('Detailed technical dashboard', dashboardUrl, '', HASHTAGS)
+  lines.push('Detailed dashboard', dashboardUrl, '', HASHTAGS)
 
   return { text: lines.join('\n'), imagePath, link: dashboardUrl }
 }

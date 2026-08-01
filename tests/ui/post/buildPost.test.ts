@@ -9,7 +9,7 @@ describe('buildPost (deterministic, no AI)', () => {
     const post = buildPost(base);
 
     expect(post.text).toContain('📋 Weekly personal work diary — v2026.W29');
-    expect(post.text).toContain('Detailed technical dashboard');
+    expect(post.text).toContain('Detailed dashboard');
     expect(post.text).toContain(dashboardUrl);
     expect(post.text).toContain('#BuildInPublic');
     expect(post.imagePath).toBe('docs/card.png');
@@ -19,7 +19,7 @@ describe('buildPost (deterministic, no AI)', () => {
   it('puts the dashboard label immediately before the link, and the link before the hashtags', () => {
     const post = buildPost(base);
 
-    expect(post.text.indexOf('Detailed technical dashboard')).toBeLessThan(post.text.indexOf(dashboardUrl));
+    expect(post.text.indexOf('Detailed dashboard')).toBeLessThan(post.text.indexOf(dashboardUrl));
     expect(post.text.indexOf(dashboardUrl)).toBeLessThan(post.text.indexOf('#BuildInPublic'));
   });
 });
