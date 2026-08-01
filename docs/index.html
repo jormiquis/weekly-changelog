@@ -249,14 +249,14 @@
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
-      <h2 class="digest-headline">Weekly changelog refines product focus and decision transparency</h2>
-      <p class="digest-summary">The changelog now emphasizes product outcomes over technical details. A clearer card layout and explicit decision tradeoffs improve user understanding of weekly changes.</p>
+      <h2 class="digest-headline">Weekly changelog refines product focus and decision clarity</h2>
+      <p class="digest-summary">A work diary project receives a visual overhaul and clearer product language. The week focused on improving user-facing presentation and summarizing technical decisions without engineering jargon.</p>
     </section>
     
     <section class="dashboard-section">
       <h2>At work</h2>
       <article class="entry-card accent-purple">
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>Integration support provided for softoken flow across engineering teams. Consent agreements microfronted and deployed to internal testing environment for company-wide use.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Integration of softoken flow and internal consent microfrontend completed. Team support provided for engineering onboarding and testing.</p>
         <ul class="changes"><li>Helped other team engineers in order to start softoken flow integration</li><li>consents agreements microfronted on testing environment for entire company internal use</li></ul>
       </article>
     </section>
@@ -269,35 +269,29 @@
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
           <span class="repo-product">a work diary project</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The weekly digest workflow now runs at 07:25 UTC on Wednesdays instead of 08:00 UTC, ensuring timely publication. A visual overhaul of the dashboard simplifies presentation with clearer product language and refined card layouts. The AI-generated digest now explicitly highlights discarded alternatives alongside chosen design patterns, improving transparency for users reviewing weekly changes.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>The changelog now turns weekly activity into a product-oriented digest with refined visuals. A new decision-tracking feature surfaces discarded alternatives alongside design patterns, improving clarity for readers. The automated weekly run time shifted to 07:25 UTC on Wednesdays.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>Weekly digest publication time adjusted to 07:25 UTC on Wednesdays</li><li>Dashboard card layout refined for clearer product-focused presentation</li><li>AI digest now includes explicit tradeoffs for design decisions</li></ul>
+          <ul class="changes"><li>Refined card layout for better readability</li><li>Automated weekly run time changed to 07:25 UTC</li><li>Dashboard now highlights decisions with discarded alternatives</li></ul>
         </div>
         <div class="repo-highlights">
           <span class="block-label">Decisions</span>
           <div class="highlight-grid">
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Provider fallback chain</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Decision tradeoff documentation</span>
           </header>
-          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">a single hardcoded provider</span></p>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">undocumented rationale</span></p>
           <div class="highlight-body">
-            <pre class="code-panel"><code class="language-typescript">class FallbackProvider {
-  constructor(
-    private readonly primary: Provider,
-    private readonly fallback: Provider
-  ) {}
-
-  async fetch(): Promise&lt;Result&gt; {
-    return this.primary.fetch()
-      .catch(() =&gt; this.fallback.fetch());
-  }
+            <pre class="code-panel"><code class="language-typescript">interface CodeHighlight {
+  title: string;
+  alternative: string;
+  code: string;
+  language: string;
 }</code></pre>
-            <pre class="mermaid">flowchart LR
-  A[Primary Provider] --&gt;|success| B[Result]
-  A --&gt;|failure| C[Fallback Provider]
-  C --&gt;|success| B</pre>
+            <pre class="mermaid">flowchart TD
+  A[Design Decision] --&gt; B[Alternative Discarded]
+  A --&gt; C[Code Evidence]</pre>
           </div>
         </article></div>
         </div>
@@ -315,7 +309,7 @@
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>Practical Tips on How to use ClaudeCode By Boris Cherny</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A third-party guide on optimizing ClaudeCode workflows for software development tasks.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A guide on leveraging ClaudeCode for efficient development workflows.</p>
         <div class="tags"><span class="tag">AI</span><span class="tag">Claude code</span><span class="tag">outside-in</span><span class="tag">specification-by-example</span></div>
         <div class="sources"><span class="sources-label">Sources</span><a href="https://youtu.be/M8HuXu_bOco?si=-iNcyhQx0nTzn9JB" target="_blank" rel="noopener">https://youtu.be/M8HuXu_bOco?si=-iNcyhQx0nTzn9JB</a></div>
       </article>
@@ -323,7 +317,7 @@
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>advanced git exercises</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A set of challenging exercises designed to improve proficiency with advanced Git operations and workflows.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A collection of exercises to improve proficiency with advanced Git techniques.</p>
         <div class="tags"><span class="tag">git</span><span class="tag">good-practices</span><span class="tag">kata</span></div>
         <div class="sources"><span class="sources-label">Sources</span><a href="https://github.com/jormiquis/advanced-git-kata" target="_blank" rel="noopener">https://github.com/jormiquis/advanced-git-kata</a><a href="https://git-scm.com/docs/git-add" target="_blank" rel="noopener">https://git-scm.com/docs/git-add</a></div>
       </article></div>
@@ -331,7 +325,7 @@
     
   </div>
   <footer>
-    Generated Aug 1, 11:28 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Aug 1, 11:43 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>

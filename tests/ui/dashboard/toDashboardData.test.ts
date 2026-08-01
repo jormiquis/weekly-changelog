@@ -21,7 +21,6 @@ const digest: SynthesizedDigest = {
   repos: [{
     repo: 'weekly-changelog',
     product: 'a weekly changelog project',
-    workedOnLine: 'added an AI digest on a weekly changelog project',
     summary: 'The changelog now turns the week into a product-oriented digest.',
     productChanges: ['AI-written weekly digest', 'Dashboard product updates'],
     highlights: [

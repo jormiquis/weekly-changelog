@@ -22,11 +22,6 @@ export interface RepoDigest {
    * the code — e.g. "a work diary project". A noun phrase, no repo name.
    */
   product: string
-  /**
-   * One product-oriented line for the card, combining the week's change with the
-   * product context, e.g. "created a new way of publishing posts on a work diary project".
-   */
-  workedOnLine: string
   /** Extensive summary (dashboard) of what was done this week, from diffs + commits. */
   summary: string
   /** Product-facing bullets: what changed in the product this week. */
@@ -55,11 +50,22 @@ export interface WorkDigest {
   bullets?: string[]
 }
 
+export interface SideProjectsDigest {
+  /**
+   * The 3-4 most important personal side-project items for the card, each a short
+   * bullet — a synthesis of the week's product work AND technical decisions across
+   * all repos. This is the summarized counterpart to the full per-repo detail.
+   */
+  bullets: string[]
+}
+
 export interface SynthesizedDigest {
   headline: string
   summary: string
   /** Per-repository digest, one entry per repo that had commits this week. */
   repos: RepoDigest[]
+  /** Summarized side-project highlights for the card. Absent when no repos had commits. */
+  sideProjects?: SideProjectsDigest
   /** Per-note summaries, one entry per learning note captured this week. */
   notes: NoteSummary[]
   /** AI summary of the week's day-job work. Absent when no work entries exist. */
@@ -95,7 +101,6 @@ function isRepoDigest(value: unknown): value is RepoDigest {
 
   return isNonEmptyString(candidate.repo)
     && isNonEmptyString(candidate.product)
-    && isNonEmptyString(candidate.workedOnLine)
     && isNonEmptyString(candidate.summary)
     && isStringArray(candidate.productChanges)
     && Array.isArray(candidate.highlights)
@@ -113,6 +118,12 @@ function isNoteSummary(value: unknown): value is NoteSummary {
 
 // The model may omit `work` entirely, or return { summary: "" } when there are no
 // work entries — both are valid; only a non-string summary is rejected.
+function isSideProjectsDigest(value: unknown): value is SideProjectsDigest {
+  if (typeof value !== 'object' || value === null) return false
+
+  return isStringArray((value as Record<string, unknown>).bullets)
+}
+
 function isWorkDigest(value: unknown): value is WorkDigest {
   if (typeof value !== 'object' || value === null) return false
 
@@ -130,6 +141,7 @@ export function isSynthesizedDigest(value: unknown): value is SynthesizedDigest 
     && isNonEmptyString(candidate.summary)
     && Array.isArray(candidate.repos)
     && candidate.repos.every(isRepoDigest)
+    && (candidate.sideProjects === undefined || isSideProjectsDigest(candidate.sideProjects))
     && Array.isArray(candidate.notes)
     && candidate.notes.every(isNoteSummary)
     && (candidate.work === undefined || isWorkDigest(candidate.work))

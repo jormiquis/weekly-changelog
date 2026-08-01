@@ -18,7 +18,6 @@ const digest: SynthesizedDigest = {
     {
       repo: 'app',
       product: 'a web app',
-      workedOnLine: 'added a new login flow on a web app',
       summary: 'The web app gained a new login flow and a dropdown fix.',
       productChanges: ['New login flow', 'Dropdown bug fixed'],
       highlights: [{ title: 'Composition over inheritance', alternative: 'class inheritance', code: 'interface Sender {}', language: 'typescript' }],
@@ -26,12 +25,12 @@ const digest: SynthesizedDigest = {
     {
       repo: 'api',
       product: 'a REST API',
-      workedOnLine: 'exposed a users endpoint on a REST API',
       summary: 'The API now exposes a users endpoint.',
       productChanges: ['Users endpoint'],
       highlights: [{ title: 'Provider fallback chain', alternative: 'a single hardcoded provider', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }],
     },
   ],
+  sideProjects: { bullets: ['New login flow', 'Users endpoint', 'Composition over inheritance'] },
   notes: [
     { title: 'Ports & adapters', summary: 'Boundaries between domain and infra' },
   ],
@@ -42,36 +41,14 @@ const digest: SynthesizedDigest = {
 };
 
 describe('buildCardData', () => {
-  it('builds one product-oriented "workedOn" line per repo from the digest', () => {
+  it('builds "sideProjects" from the AI bullets (merged product work + decisions)', () => {
     const card = buildCardData([], { week: 'Week of Jul 15', digest });
 
-    expect(card.workedOn).toEqual([
-      'added a new login flow on a web app',
-      'exposed a users endpoint on a REST API',
-    ]);
-  });
-
-  it('builds "decisions" from the highlight titles, with no location', () => {
-    const card = buildCardData([], { week: 'Week of Jul 15', digest });
-
-    expect(card.decisions).toEqual([
+    expect(card.sideProjects).toEqual([
+      'New login flow',
+      'Users endpoint',
       'Composition over inheritance',
-      'Provider fallback chain',
     ]);
-  });
-
-  it('de-duplicates repeated decisions across repos', () => {
-    const dupDigest: SynthesizedDigest = {
-      ...digest,
-      repos: digest.repos.map(repo => ({
-        ...repo,
-        highlights: [{ title: 'Composition over inheritance', alternative: 'class inheritance', code: 'x', language: 'ts' }],
-      })),
-    };
-
-    const card = buildCardData([], { week: 'Week of Jul 15', digest: dupDigest });
-
-    expect(card.decisions).toEqual(['Composition over inheritance']);
   });
 
   it('builds "learnings" from raw note titles, without AI, even when a digest exists', () => {
@@ -82,24 +59,16 @@ describe('buildCardData', () => {
     expect(card.learnings).toEqual(['Ports & adapters', 'Free-tier LLMs']);
   });
 
-  it('caps workedOn/decisions at three and learnings at two', () => {
+  it('caps sideProjects at four and learnings at two', () => {
     const wideDigest: SynthesizedDigest = {
       ...digest,
-      repos: ['a', 'b', 'c', 'd'].map((name, i) => ({
-        repo: name,
-        product: `product ${name}`,
-        workedOnLine: `line ${name}`,
-        summary: `summary ${name}`,
-        productChanges: [`change ${name}`],
-        highlights: [{ title: `decision ${i}`, alternative: `alt ${i}`, code: 'x', language: 'ts' }],
-      })),
+      sideProjects: { bullets: ['s1', 's2', 's3', 's4', 's5'] },
     };
     const activities = [note('n1'), note('n2'), note('n3')];
 
     const card = buildCardData(activities, { week: 'Week of Jul 15', digest: wideDigest });
 
-    expect(card.workedOn).toEqual(['line a', 'line b', 'line c']);
-    expect(card.decisions).toEqual(['decision 0', 'decision 1', 'decision 2']);
+    expect(card.sideProjects).toEqual(['s1', 's2', 's3', 's4']);
     expect(card.learnings).toEqual(['n1', 'n2']);
   });
 
@@ -109,8 +78,7 @@ describe('buildCardData', () => {
     const card = buildCardData(activities, { week: 'Week of Jul 15', version: 'v2026.W29' });
 
     expect(card.version).toBe('v2026.W29');
-    expect(card.workedOn).toEqual([]);
-    expect(card.decisions).toEqual([]);
+    expect(card.sideProjects).toEqual([]);
     // Learnings never depend on the digest.
     expect(card.learnings).toEqual(['A note']);
     expect(card.atWork).toEqual([]);

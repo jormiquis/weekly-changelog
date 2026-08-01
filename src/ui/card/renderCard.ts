@@ -25,9 +25,8 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const WORKED_ON_ACCENT = '#2fae2f'
+const SIDE_PROJECTS_ACCENT = '#2fae2f'
 const AT_WORK_ACCENT = '#a78bfa'
-const DECISIONS_ACCENT = '#e0a53b'
 const LEARNINGS_ACCENT = '#d55181'
 const VERSION_ACCENT = '#3987e5'
 const COLUMN_GAP = 22
@@ -132,11 +131,10 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
   const title = data.title ?? 'Changelog'
   const subtitle = data.subtitle ?? 'Weekly engineering release'
 
-  // "At work" only appears when there are day-job entries; the other three are always shown.
+  // "At work" only appears when there are day-job entries; the other two are always shown.
   const columns = [
-    { accent: WORKED_ON_ACCENT, emoji: '🚀', title: 'Worked on', bullets: data.workedOn },
+    { accent: SIDE_PROJECTS_ACCENT, emoji: '🚀', title: 'Side projects', bullets: data.sideProjects },
     ...(data.atWork.length > 0 ? [{ accent: AT_WORK_ACCENT, emoji: '💼', title: 'At work', bullets: data.atWork }] : []),
-    { accent: DECISIONS_ACCENT, emoji: '🧭', title: 'Decisions', bullets: data.decisions },
     { accent: LEARNINGS_ACCENT, emoji: '📚', title: 'Learnings', bullets: data.learnings },
   ]
 

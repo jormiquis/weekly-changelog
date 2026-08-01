@@ -120,7 +120,7 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     codeDiffs.length > 0 ? codeDiffs : '(no code diffs available)',
     '',
     'Respond with ONLY strict JSON (no markdown fences, no commentary) matching exactly this shape:',
-    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "workedOnLine": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "notes": [{"title": string, "summary": string}], "work": {"summary": string, "bullets": [string]}}',
+    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "sideProjects": {"bullets": [string]}, "notes": [{"title": string, "summary": string}], "work": {"summary": string, "bullets": [string]}}',
     '',
     'Tone constraints, apply to every prose field:',
     '- Impersonal. Use nominal phrases or neutral/passive constructions.',
@@ -134,8 +134,7 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
       ? `- repos: exactly one entry per repository listed above with commits (${repoNames.join(', ')}). "repo" is the repository name copied VERBATIM. For each:`
       : '- repos: empty array, since no repository had commits this week.',
     '  · "product": a short noun phrase for what the repo IS, product-oriented, inferred from the code, e.g. "a work diary project", "a personal finance API". Max 8 words. No repo name, no leading article beyond "a/an".',
-    '  · "workedOnLine": ONE product-oriented line combining the week\'s main change with the product context, phrased like "created a new way of publishing posts on a work diary project". Start with a past-tense-free nominal/neutral change, then " on " + the product. Max 18 words.',
-    '  · "summary": 2-3 sentences describing what was done this week for that product, more extensive than workedOnLine. Product outcomes, grounded in the diffs.',
+    '  · "summary": 2-3 sentences describing what was done this week for that product. Product outcomes, grounded in the diffs.',
     '  · "productChanges": 1 to 4 bullets, each a concrete user-facing change to the product this week (a capability added, changed, or fixed). Nominal phrase, max 14 words. Never mention where in the code it lives.',
     '  · "highlights": 0 to 3 entries, ONLY for genuinely worthwhile engineering in this repo\'s diffs. Skip trivial changes (renames, config, formatting). Empty array if nothing is worthwhile — do NOT invent.',
     '      "title": the design pattern or architectural decision, ENUNCIATED as a bare fact, e.g. "Composition over inheritance", "Provider fallback chain", "Refactor to aggregate pattern". Max 8 words. No rationale, no "because", no file/location.',
@@ -143,6 +142,9 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     '      "code": a SHORT (max ~14 lines), self-contained, attractive snippet distilled from that diff that best evidences the pattern. Real code from the diff, cleaned of diff +/- markers. Preserve newlines as \\n.',
     '      "language": the source language, lowercase (e.g. "typescript").',
     '      "diagram": a SIMPLE, valid mermaid diagram (flowchart, e.g. "flowchart LR\\n  A[Domain] --> B[Port] --> C[Adapter]") illustrating the pattern with 3-6 nodes. Use "" only if a diagram truly does not fit.',
+    repoNames.length > 0
+      ? '- sideProjects.bullets: the 3 to 4 MOST IMPORTANT personal side-project items this week, synthesized across ALL repos, MERGING product changes and technical decisions into short card bullets. Each ≤9 words, nominal phrase, no trailing period, no repo/location. Most impactful first. This is the summarized view of the per-repo detail above.'
+      : '- sideProjects.bullets: [] — empty array, since no repository had commits this week.',
     titles.length > 0
       ? `- notes: exactly one entry per note listed above (${titles.length} note(s)). "title" is the note title copied VERBATIM, and "summary" is 1 sentence (max 25 words) summarizing what the note is about.`
       : '- notes: empty array, since no notes were captured this week.',
