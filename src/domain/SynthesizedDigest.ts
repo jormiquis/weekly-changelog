@@ -50,13 +50,20 @@ export interface WorkDigest {
   bullets?: string[]
 }
 
+export interface SideProjectBullet {
+  /** Repository the bullet applies to, copied verbatim from the repos above. */
+  project: string
+  /** The bullet itself — never repeats the project name. */
+  text: string
+}
+
 export interface SideProjectsDigest {
   /**
    * The 3-4 most important personal side-project items for the card, each a short
    * bullet — a synthesis of the week's product work AND technical decisions across
    * all repos. This is the summarized counterpart to the full per-repo detail.
    */
-  bullets: string[]
+  bullets: SideProjectBullet[]
 }
 
 export interface SynthesizedDigest {
@@ -116,12 +123,22 @@ function isNoteSummary(value: unknown): value is NoteSummary {
     && isNonEmptyString(candidate.summary)
 }
 
+function isSideProjectBullet(value: unknown): value is SideProjectBullet {
+  if (typeof value !== 'object' || value === null) return false
+
+  const candidate = value as Record<string, unknown>
+
+  return isNonEmptyString(candidate.project) && isNonEmptyString(candidate.text)
+}
+
 // The model may omit `work` entirely, or return { summary: "" } when there are no
 // work entries — both are valid; only a non-string summary is rejected.
 function isSideProjectsDigest(value: unknown): value is SideProjectsDigest {
   if (typeof value !== 'object' || value === null) return false
 
-  return isStringArray((value as Record<string, unknown>).bullets)
+  const bullets = (value as Record<string, unknown>).bullets
+
+  return Array.isArray(bullets) && bullets.every(isSideProjectBullet)
 }
 
 function isWorkDigest(value: unknown): value is WorkDigest {

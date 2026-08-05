@@ -30,7 +30,13 @@ const digest: SynthesizedDigest = {
       highlights: [{ title: 'Provider fallback chain', alternative: 'a single hardcoded provider', code: 'class Fallback {}', language: 'typescript', diagram: 'flowchart LR\n A --> B' }],
     },
   ],
-  sideProjects: { bullets: ['New login flow', 'Users endpoint', 'Composition over inheritance'] },
+  sideProjects: {
+    bullets: [
+      { project: 'app', text: 'New login flow' },
+      { project: 'api', text: 'Users endpoint' },
+      { project: 'app', text: 'Composition over inheritance' },
+    ],
+  },
   notes: [
     { title: 'Ports & adapters', summary: 'Boundaries between domain and infra' },
   ],
@@ -41,13 +47,13 @@ const digest: SynthesizedDigest = {
 };
 
 describe('buildCardData', () => {
-  it('builds "sideProjects" from the AI bullets (merged product work + decisions)', () => {
+  it('builds "sideProjects" from the AI bullets, keeping the project each one applies to', () => {
     const card = buildCardData([], { week: 'Week of Jul 15', digest });
 
     expect(card.sideProjects).toEqual([
-      'New login flow',
-      'Users endpoint',
-      'Composition over inheritance',
+      { project: 'app', text: 'New login flow' },
+      { project: 'api', text: 'Users endpoint' },
+      { project: 'app', text: 'Composition over inheritance' },
     ]);
   });
 
@@ -62,13 +68,13 @@ describe('buildCardData', () => {
   it('caps sideProjects at four and learnings at two', () => {
     const wideDigest: SynthesizedDigest = {
       ...digest,
-      sideProjects: { bullets: ['s1', 's2', 's3', 's4', 's5'] },
+      sideProjects: { bullets: ['s1', 's2', 's3', 's4', 's5'].map(text => ({ project: 'app', text })) },
     };
     const activities = [note('n1'), note('n2'), note('n3')];
 
     const card = buildCardData(activities, { week: 'Week of Jul 15', digest: wideDigest });
 
-    expect(card.sideProjects).toEqual(['s1', 's2', 's3', 's4']);
+    expect(card.sideProjects).toEqual(['s1', 's2', 's3', 's4'].map(text => ({ project: 'app', text })));
     expect(card.learnings).toEqual(['n1', 'n2']);
   });
 

@@ -3,7 +3,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import type { CardData } from './CardData.js';
+import type { CardData, SideProjectBullet } from './CardData.js';
 import { type CardTheme, defaultTheme } from './CardTheme.js';
 
 const fontsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'fonts')
@@ -69,21 +69,63 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 const LINE_PX = 38
+const LABEL_LINE_PX = 28
+const SECTION_GAP = 12
+
+/**
+ * A block of bullets inside a column, optionally introduced by a label — side
+ * projects use it to say which project the bullets under it apply to; the other
+ * columns are a single unlabelled section.
+ */
+interface Section { label: string; bullets: string[] }
 
 /** Estimated rendered lines for a "•  {value}" bullet (accounts for word wrap, no ellipsis). */
 function bulletLines(value: string, charsPerLine: number): number {
   return Math.max(1, Math.ceil((value.length + 3) / charsPerLine))
 }
 
-/** Total rendered lines a column of bullets occupies (min 1 for the empty placeholder). */
-function columnLineCount(bullets: string[], charsPerLine: number): number {
-  if (bullets.length === 0) return 1
-  return bullets.reduce((sum, value) => sum + bulletLines(value, charsPerLine), 0)
+/** Total px a column's sections occupy (one empty line for the empty placeholder). */
+function contentHeight(sections: Section[], charsPerLine: number): number {
+  if (sections.length === 0) return LINE_PX
+
+  const sectionsPx = sections.reduce((sum, section) => {
+    const bulletsPx = section.bullets.reduce((lines, value) => lines + bulletLines(value, charsPerLine), 0) * LINE_PX
+    return sum + (section.label ? LABEL_LINE_PX : 0) + bulletsPx
+  }, 0)
+
+  return sectionsPx + (sections.length - 1) * SECTION_GAP
 }
 
-function column(theme: CardTheme, accent: string, emoji: string, title: string, bullets: string[], height: number, layout: ColumnLayout): SatoriNode {
-  const shown = bullets.length > 0 ? bullets : ['—']
-  const bulletBlock = shown.map(value => bullets.length > 0 ? `•  ${value}` : value).join('\n')
+/** One labelled (or unlabelled) block of bullets. Heights are explicit — satori under-measures hard-wrapped blocks. */
+function section(theme: CardTheme, accent: string, { label, bullets }: Section, layout: ColumnLayout): SatoriNode {
+  const bulletBlock = bullets.map(value => `•  ${value}`).join('\n')
+  const bulletsPx = bullets.reduce((lines, value) => lines + bulletLines(value, layout.charsPerLine), 0) * LINE_PX
+
+  return box({ flexDirection: 'column', width: `${layout.textWidth}px` }, [
+    ...(label ? [text(label, {
+      height: `${LABEL_LINE_PX}px`,
+      fontSize: '16px',
+      fontWeight: 600,
+      letterSpacing: '0.04em',
+      lineHeight: `${LABEL_LINE_PX}px`,
+      color: hexToRgba(accent, 0.85),
+    })] : []),
+    text(bulletBlock, {
+      width: `${layout.textWidth}px`,
+      height: `${bulletsPx}px`,
+      whiteSpace: 'pre-wrap',
+      fontSize: '21px',
+      fontWeight: 500,
+      lineHeight: `${LINE_PX}px`,
+      color: theme.textPrimary,
+    })
+  ])
+}
+
+function column(theme: CardTheme, accent: string, emoji: string, title: string, sections: Section[], height: number, layout: ColumnLayout): SatoriNode {
+  const body = sections.length > 0
+    ? sections.map(current => section(theme, accent, current, layout))
+    : [text('—', { fontSize: '21px', fontWeight: 500, lineHeight: `${LINE_PX}px`, color: theme.textMuted })]
 
   return box({
     flexDirection: 'column',
@@ -98,17 +140,28 @@ function column(theme: CardTheme, accent: string, emoji: string, title: string, 
     padding: `30px ${COLUMN_PADDING_X}px`,
   }, [
     text(`${emoji}  ${title}`, { fontSize: '18px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent }),
-    // satori under-measures a hard-wrapped block, so the height is set explicitly.
-    text(bulletBlock, {
-      width: `${layout.textWidth}px`,
-      height: `${columnLineCount(bullets, layout.charsPerLine) * LINE_PX}px`,
-      whiteSpace: 'pre-wrap',
-      fontSize: '21px',
-      fontWeight: 500,
-      lineHeight: `${LINE_PX}px`,
-      color: bullets.length > 0 ? theme.textPrimary : theme.textMuted,
-    })
+    box({ flexDirection: 'column', gap: `${SECTION_GAP}px` }, body),
   ])
+}
+
+/** Side-project bullets, grouped under the project they apply to, in first-seen order. */
+function byProject(bullets: SideProjectBullet[]): Section[] {
+  const sections: Section[] = []
+
+  for (const { project, text: value } of bullets) {
+    const label = project.trim()
+    const current = sections.find(existing => existing.label === label)
+
+    if (current) current.bullets.push(value)
+    else sections.push({ label, bullets: [value] })
+  }
+
+  return sections
+}
+
+/** A column with no grouping: a single unlabelled section, absent when there is nothing to show. */
+function flat(bullets: string[]): Section[] {
+  return bullets.length > 0 ? [{ label: '', bullets }] : []
 }
 
 function header(theme: CardTheme, data: CardData, title: string, subtitle: string): SatoriNode {
@@ -133,25 +186,25 @@ export async function renderCard(data: CardData, theme: CardTheme = defaultTheme
 
   // "At work" only appears when there are day-job entries; the other two are always shown.
   const columns = [
-    { accent: SIDE_PROJECTS_ACCENT, emoji: '🚀', title: 'Side projects', bullets: data.sideProjects },
-    ...(data.atWork.length > 0 ? [{ accent: AT_WORK_ACCENT, emoji: '💼', title: 'At work', bullets: data.atWork }] : []),
-    { accent: LEARNINGS_ACCENT, emoji: '📚', title: 'Learnings', bullets: data.learnings },
+    { accent: SIDE_PROJECTS_ACCENT, emoji: '🚀', title: 'Side projects', sections: byProject(data.sideProjects) },
+    ...(data.atWork.length > 0 ? [{ accent: AT_WORK_ACCENT, emoji: '💼', title: 'At work', sections: flat(data.atWork) }] : []),
+    { accent: LEARNINGS_ACCENT, emoji: '📚', title: 'Learnings', sections: flat(data.learnings) },
   ]
 
   const layout = computeLayout(columns.length, theme.width - OUTER_PADDING_X * 2)
 
-  // Header (~30) + gap (18) + bullet lines + vertical padding (60); all columns share the taller one.
-  const maxLines = Math.max(...columns.map(c => columnLineCount(c.bullets, layout.charsPerLine)))
+  // Header (~30) + gap (18) + content + vertical padding (60); all columns share the taller one.
+  const maxContent = Math.max(...columns.map(c => contentHeight(c.sections, layout.charsPerLine)))
   // Floor keeps the columns filling the card now that the stats bar is gone; content taller than the floor still grows.
   const MIN_COLUMN_HEIGHT = 480
-  const columnHeight = Math.max(30 + 18 + maxLines * LINE_PX + 60, MIN_COLUMN_HEIGHT)
+  const columnHeight = Math.max(30 + 18 + maxContent + 60, MIN_COLUMN_HEIGHT)
 
   const svg = await satori(
     box({ width: `${theme.width}px`, height: `${theme.height}px`, background: theme.background, fontFamily: theme.fontFamily }, [
       box({ flexDirection: 'column', width: '100%', height: '100%', padding: `52px ${OUTER_PADDING_X}px` }, [
         header(theme, data, title, subtitle),
         box({ flexDirection: 'row', gap: `${COLUMN_GAP}px`, marginTop: '34px' },
-          columns.map(c => column(theme, c.accent, c.emoji, c.title, c.bullets, columnHeight, layout)),
+          columns.map(c => column(theme, c.accent, c.emoji, c.title, c.sections, columnHeight, layout)),
         ),
       ])
     ]),

@@ -120,7 +120,7 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     codeDiffs.length > 0 ? codeDiffs : '(no code diffs available)',
     '',
     'Respond with ONLY strict JSON (no markdown fences, no commentary) matching exactly this shape:',
-    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "sideProjects": {"bullets": [string]}, "notes": [{"title": string, "summary": string}], "work": {"summary": string, "bullets": [string]}}',
+    '{"headline": string, "summary": string, "repos": [{"repo": string, "product": string, "summary": string, "productChanges": [string], "highlights": [{"title": string, "alternative": string, "code": string, "language": string, "diagram": string}]}], "sideProjects": {"bullets": [{"project": string, "text": string}]}, "notes": [{"title": string, "summary": string}], "work": {"summary": string, "bullets": [string]}}',
     '',
     'Tone constraints, apply to every prose field:',
     '- Impersonal. Use nominal phrases or neutral/passive constructions.',
@@ -143,7 +143,9 @@ export function buildDigestPrompt(activities: Activity[], week: string): string 
     '      "language": the source language, lowercase (e.g. "typescript").',
     '      "diagram": a SIMPLE, valid mermaid diagram (flowchart, e.g. "flowchart LR\\n  A[Domain] --> B[Port] --> C[Adapter]") illustrating the pattern with 3-6 nodes. Use "" only if a diagram truly does not fit.',
     repoNames.length > 0
-      ? '- sideProjects.bullets: the 3 to 4 MOST IMPORTANT personal side-project items this week, synthesized across ALL repos, MERGING product changes and technical decisions into short card bullets. Each ≤9 words, nominal phrase, no trailing period, no repo/location. Most impactful first. This is the summarized view of the per-repo detail above.'
+      ? `- sideProjects.bullets: the 3 to 4 MOST IMPORTANT personal side-project items this week, selected across ALL repos, MERGING product changes and technical decisions into short card bullets. Most impactful first. This is the summarized view of the per-repo detail above. For each:
+  · "project": the repository the bullet applies to, copied VERBATIM from the list above (${repoNames.join(', ')}). Every bullet belongs to exactly one repository — never merge two repos into one bullet.
+  · "text": the bullet itself, ≤8 words, nominal phrase, no trailing period. The project name is shown separately on the card, so never repeat it (nor any file/location) inside the text.`
       : '- sideProjects.bullets: [] — empty array, since no repository had commits this week.',
     titles.length > 0
       ? `- notes: exactly one entry per note listed above (${titles.length} note(s)). "title" is the note title copied VERBATIM, and "summary" is 1 sentence (max 25 words) summarizing what the note is about.`

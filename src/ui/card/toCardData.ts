@@ -1,7 +1,7 @@
 import type { Activity } from '../../domain/Activity.js';
 import { isLearningEntry } from '../../domain/ActivityMeta.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
-import type { CardData } from './CardData.js';
+import type { CardData, SideProjectBullet } from './CardData.js';
 
 const MAX_SIDE_PROJECTS = 4
 const MAX_LEARNINGS = 2
@@ -9,11 +9,13 @@ const MAX_AT_WORK = 3
 
 /**
  * "Side projects" bullets: the AI's 3-4 most important personal side-project
- * highlights, merging product work and technical decisions across repos. Empty
- * when no digest was produced.
+ * highlights, merging product work and technical decisions across repos, each
+ * tagged with the project it applies to. Empty when no digest was produced.
  */
-function buildSideProjects(digest?: SynthesizedDigest): string[] {
-  return (digest?.sideProjects?.bullets ?? []).slice(0, MAX_SIDE_PROJECTS)
+function buildSideProjects(digest?: SynthesizedDigest): SideProjectBullet[] {
+  return (digest?.sideProjects?.bullets ?? [])
+    .slice(0, MAX_SIDE_PROJECTS)
+    .map(({ project, text }) => ({ project, text }))
 }
 
 /**
