@@ -1,4 +1,6 @@
 import type { DashboardData, DashboardHighlight } from './DashboardData.js';
+import { howItWorksSvg } from '../diagram/howItWorks.js';
+import { themedPalette } from '../diagram/DiagramPalette.js';
 
 function escapeHtml(value: string): string {
   return value
@@ -415,6 +417,20 @@ export function renderDashboard(data: DashboardData): string {
 
     .empty-state { text-align: center; color: var(--text-muted); font-size: 15px; padding: 20px 0; }
 
+    /* How this works — a link in the header opens the pipeline diagram over the page. */
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .how-link { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-purple); background: var(--accent-purple-bg); border: 1px solid var(--border); padding: 7px 16px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+    .how-link:hover { border-color: var(--accent-purple); }
+    .how-modal { display: none; }
+    .how-modal:target { display: flex; position: fixed; inset: 0; z-index: 30; align-items: center; justify-content: center; padding: clamp(12px, 3vw, 40px); }
+    .how-backdrop { position: absolute; inset: 0; background: rgba(11, 11, 11, 0.66); }
+    .how-panel { position: relative; margin: 0; width: min(1180px, 100%); max-height: 92vh; overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); padding: clamp(16px, 2vw, 24px); }
+    .how-close { position: absolute; top: 10px; right: 16px; font-size: 22px; line-height: 1; color: var(--text-muted); text-decoration: none; }
+    .how-close:hover { color: var(--text-primary); }
+    .how-canvas { overflow-x: auto; }
+    .how-canvas svg { display: block; width: 100%; min-width: 720px; height: auto; }
+    .how-caption { font-size: 13.5px; line-height: 1.55; color: var(--text-muted); margin: 14px 0 0; }
+
     footer { font-size: 13px; color: var(--text-muted); text-align: center; }
     footer a { color: var(--text-secondary); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
@@ -430,7 +446,10 @@ export function renderDashboard(data: DashboardData): string {
   <div class="page">
     <header class="page-header">
       <h1>Weekly Changelog</h1>
-      <span class="week-pill">${escapeHtml(data.week)}</span>
+      <div class="header-actions">
+        <a class="how-link" href="#how-it-works">How this works?</a>
+        <span class="week-pill">${escapeHtml(data.week)}</span>
+      </div>
     </header>
     ${digestSection(data.digest)}
     ${workSection(data.work)}
@@ -440,6 +459,14 @@ export function renderDashboard(data: DashboardData): string {
     ${pullRequestsSection(data.pullRequests)}
     ${notesSection(data.notes)}
     ${!hasActivity ? '<p class="empty-state">No activity recorded this week.</p>' : ''}
+  </div>
+  <div class="how-modal" id="how-it-works">
+    <a class="how-backdrop" href="#_" aria-label="Close"></a>
+    <figure class="how-panel">
+      <a class="how-close" href="#_" aria-label="Close">&times;</a>
+      <div class="how-canvas">${howItWorksSvg(themedPalette, 'How this works')}</div>
+      <figcaption class="how-caption">Every Wednesday a GitHub Action collects the week from GitHub and Notion, normalises it into one <code>Activity</code> shape, asks a free-tier LLM for a digest &mdash; optional, the run never fails on it &mdash; renders the card and this dashboard, and waits for a yes on Telegram before anything reaches LinkedIn.</figcaption>
+    </figure>
   </div>
   <footer>
     Generated ${escapeHtml(data.generatedAt)} &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>

@@ -16,6 +16,7 @@ Designed to run entirely on **free tiers** — no paid API calls, ever.
 |--------|------|---------|
 | Social card | `docs/card.png` | 1200×760 product-changelog PNG for LinkedIn/X — **Shipped** bullets (from feat/fix/refactor commits), **Learned** bullets (Notion notes), and a raw-stats bar (commits · notes · lines changed · repos). Deterministic, **no AI**. |
 | Dashboard | `docs/index.html` | Responsive light/dark page — evidence-backed AI highlights, a **metrics** panel, a **weekly timeline**, raw commits grouped by repo with diff stats, new repos, and detailed learnings. Served via GitHub Pages. |
+| How-it-works diagram | `docs/how-it-works.png` | 1200×900 pipeline diagram (cron → sources → domain hexagon → optional LLM chain → render → Telegram gate → LinkedIn). The same drawing is inlined as SVG in the dashboard behind the header's **How this works?** link, where it follows the light/dark theme. Regenerate with `npm run diagram`. |
 | Approval | Telegram message | The card is sent to your chat; reply `yes` to approve or `no` to reject before publishing. |
 | LinkedIn post | On approval | The card is posted natively with a **deterministic, no-AI caption** — raw counts (commits across repos, new repos, notes taken), the dashboard link, and hashtags. |
 
@@ -165,6 +166,7 @@ src/
 ├── ui/
 │   ├── card/                   # satori + resvg → PNG (fixed design)
 │   ├── dashboard/              # HTML string builder (light/dark, responsive)
+│   ├── diagram/                # how-it-works diagram (inline SVG + PNG export)
 │   ├── post/                   # buildPost — LinkedIn-optimized copy
 │   └── fonts/                  # Poppins .ttf (bundled into dist on build)
 └── main.ts                     # Composition root
@@ -288,6 +290,7 @@ to the updated page once Pages finishes rebuilding (usually under a minute).
 npm test           # vitest run — use-case tests for every adapter & pure module
 npm run test:watch # watch mode
 npm run build      # typecheck + emit dist/ + copy fonts
+npm run diagram    # re-render docs/how-it-works.png from src/ui/diagram/
 ```
 
 Tests mirror `src/` under `tests/` and cover the retrievers, the LLM adapters
