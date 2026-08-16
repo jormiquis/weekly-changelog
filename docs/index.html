@@ -229,6 +229,20 @@
 
     .empty-state { text-align: center; color: var(--text-muted); font-size: 15px; padding: 20px 0; }
 
+    /* How this works — a link in the header opens the pipeline diagram over the page. */
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .how-link { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-purple); background: var(--accent-purple-bg); border: 1px solid var(--border); padding: 7px 16px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+    .how-link:hover { border-color: var(--accent-purple); }
+    .how-modal { display: none; }
+    .how-modal:target { display: flex; position: fixed; inset: 0; z-index: 30; align-items: center; justify-content: center; padding: clamp(12px, 3vw, 40px); }
+    .how-backdrop { position: absolute; inset: 0; background: rgba(11, 11, 11, 0.66); }
+    .how-panel { position: relative; margin: 0; width: min(1180px, 100%); max-height: 92vh; overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); padding: clamp(16px, 2vw, 24px); }
+    .how-close { position: absolute; top: 10px; right: 16px; font-size: 22px; line-height: 1; color: var(--text-muted); text-decoration: none; }
+    .how-close:hover { color: var(--text-primary); }
+    .how-canvas { overflow-x: auto; }
+    .how-canvas svg { display: block; width: 100%; min-width: 720px; height: auto; }
+    .how-caption { font-size: 13.5px; line-height: 1.55; color: var(--text-muted); margin: 14px 0 0; }
+
     footer { font-size: 13px; color: var(--text-muted); text-align: center; }
     footer a { color: var(--text-secondary); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
@@ -244,116 +258,82 @@
   <div class="page">
     <header class="page-header">
       <h1>Weekly Changelog</h1>
-      <span class="week-pill">Week of Aug 5</span>
+      <div class="header-actions">
+        <a class="how-link" href="#how-it-works">How this works?</a>
+        <span class="week-pill">Week of Aug 16</span>
+      </div>
     </header>
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
-      <h2 class="digest-headline">Tab Group Timer reaches 1.0 and privacy policy published</h2>
-      <p class="digest-summary">A lightweight Chrome extension now tracks time per tab group with local-only storage and idle detection. A companion changelog generator adds LinkedIn token renewal and LinkedIn post features.</p>
+      <h2 class="digest-headline">How-it-works diagram added to changelog dashboard</h2>
+      <p class="digest-summary">A visual pipeline diagram is now available to explain the changelog generation flow. The dashboard gains a themed inline SVG and a PNG export for external use.</p>
     </section>
     
-    <section class="dashboard-section">
-      <h2>At work</h2>
-      <article class="entry-card accent-purple">
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>Engineering support delivered for softoken flow integration and internal consent microfrontend deployment. Testing environments validated for company-wide use.</p>
-        <ul class="changes"><li>Helped other team engineers in order to start softoken flow integration</li><li>consents agreements microfronted on testing environment for entire company internal use</li></ul>
-      </article>
-    </section>
     
     <section class="dashboard-section">
       <h2>Product updates by repository</h2>
       <div class="repo-stack">
       <article class="repo-card accent-blue">
         <header class="entry-head">
-          <a class="entry-title" href="https://github.com/jormiquis/tab-group-timer" target="_blank" rel="noopener">tab-group-timer</a>
-          <span class="repo-product">a Chrome extension for tab-group time tracking</span>
+          <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
+          <span class="repo-product">automated changelog generator</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The extension graduates to v1.0 with a privacy policy, refined idle handling, and a more robust session model. Build artifacts and screenshots are now versioned and packaged for distribution.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A new pipeline diagram illustrates the end-to-end changelog process. The dashboard now includes a themed inline SVG and a PNG export for LinkedIn and README use.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>Idle time no longer counted as work time</li><li>Live counter shows current group and today&#39;s totals</li><li>Export data to CSV or JSON</li><li>Privacy policy published and packaged with extension</li></ul>
+          <ul class="changes"><li>How-it-works diagram added to dashboard header</li><li>Pipeline diagram exported as PNG for external sharing</li><li>Diagram follows light/dark theme automatically</li><li>SVG diagram accessible via How this works? link</li></ul>
         </div>
         <div class="repo-highlights">
           <span class="block-label">Decisions</span>
           <div class="highlight-grid">
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Session pattern with aggregate state</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Theme-aware SVG rendering</span>
           </header>
-          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">naive per-tab tracking</span></p>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Hardcoded color values</span></p>
           <div class="highlight-body">
-            <pre class="code-panel"><code class="language-typescript">export class TrackActiveTabUseCase {
-  constructor(
-    private repo: TimeRepository,
-    private clock: Clock,
-    private sessions: SessionStore,
-  ) {}
-
-  async onActiveTabChanged(info: ActiveTabInfo): Promise&lt;void&gt; {
-    const now = this.clock.now();
-    const current = await this.sessions.get();
-
-    if (current &amp;&amp; current.groupKey === info.groupKey) {
-      if (current.groupTitle !== info.groupTitle) {
-        await this.sessions.set({ ...current, groupTitle: info.groupTitle });
-      }
-      return;
-    }
-
-    if (current) {
-      await this.flush(now);
-    }
-    await this.sessions.set(
-      new ActiveSession(info.groupKey, info.groupTitle, now)
-    );
-  }</code></pre>
-            <pre class="mermaid">flowchart LR
-  A[onActiveTabChanged] --&gt; B{current session?}
-  B --&gt;|yes| C{same group?}
-  C --&gt;|yes| D[update title]
-  C --&gt;|no| E[close session]
-  B --&gt;|no| F[open new session]</pre>
+            <pre class="code-panel"><code class="language-typescript">export const themedPalette: DiagramPalette = {
+  background: &#39;none&#39;,
+  surface: &#39;var(--tag-bg)&#39;,
+  border: &#39;var(--border)&#39;,
+  textPrimary: &#39;var(--text-primary)&#39;,
+  textSecondary: &#39;var(--text-secondary)&#39;,
+  textMuted: &#39;var(--text-muted)&#39;,
+  line: &#39;var(--text-muted)&#39;,
+  ai: &#39;var(--accent-purple)&#39;,
+  aiSurface: &#39;var(--accent-purple-bg)&#39;,
+  gate: &#39;var(--accent-magenta)&#39;,
+  gateSurface: &#39;var(--accent-magenta-bg)&#39;,
+  publish: &#39;var(--accent-blue)&#39;,
+  publishSurface: &#39;var(--accent-blue-bg)&#39;,
+}</code></pre>
+            <pre class="mermaid">flowchart TD
+  A[Dashboard CSS Variables] --&gt; B[DiagramPalette Interface]
+  B --&gt; C[Inline SVG Rendering]
+  B --&gt; D[PNG Export with Literal Colors]</pre>
           </div>
         </article>
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Provider pattern for session storage</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Modular diagram generation pipeline</span>
           </header>
-          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">direct chrome.storage.local calls</span></p>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Monolithic diagram script</span></p>
           <div class="highlight-body">
-            <pre class="code-panel"><code class="language-typescript">export class ChromeSessionStore implements SessionStore {
-  async get(): Promise&lt;ActiveSession | null&gt; {
-    const { session } = await chrome.storage.session.get(&#39;session&#39;);
-    return session ? ActiveSession.fromPlain(session) : null;
-  }
+            <pre class="code-panel"><code class="language-typescript">import { writeFileSync } from &#39;fs&#39;;
+import { renderHowItWorksPng } from &#39;./renderHowItWorks.js&#39;;
 
-  async set(session: ActiveSession): Promise&lt;void&gt; {
-    await chrome.storage.session.set({ session });
-  }
-}</code></pre>
-            <pre class="mermaid">flowchart LR
-  A[SessionStore] --&gt; B[chrome.storage.session]
-  A --&gt; C[ActiveSession]
-  B --&gt;|get| A
-  B --&gt;|set| A</pre>
+const target = process.argv[2] || &#39;docs/how-it-works.png&#39;
+writeFileSync(target, renderHowItWorksPng())
+console.log(`How-it-works diagram written to ${target}`)</code></pre>
+            <pre class="mermaid">flowchart TD
+  A[CLI Command] --&gt; B[generate.ts]
+  B --&gt; C[renderHowItWorksPng]
+  C --&gt; D[PNG File Output]</pre>
           </div>
         </article></div>
         </div>
-        <a class="diff-link" href="https://github.com/jormiquis/tab-group-timer/compare/16ad02786534c2158ddfa78bc721713a8b1ffa46...9bffa567bd0490707add83e47f54275160e74b3a.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
-      </article>
-      <article class="repo-card accent-blue">
-        <header class="entry-head">
-          <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
-          <span class="repo-product">a changelog generator CLI</span>
-        </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The generator now supports LinkedIn token renewal, LinkedIn post linking, and a unified view of side projects and work activity. Scheduling and dashboard options have been refined.</p>
-        <div class="product-changes">
-          <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>LinkedIn token renewal command added</li><li>LinkedIn post link caption changed</li><li>Side projects and work activity unified in one section</li><li>Cron hour adjusted and dashboard alternative provided</li></ul>
-        </div>
-        
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/0be5018be472c787e45b34dfa547689cc62e896d...6bbb2f2609ef013c8fa4e33d344ee4268a6b0018.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/cabe441025a2d7acc06d04106ff7181a3aaa202f...86847a92361aadae0d4ca4d6ab0080c44f393260.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
@@ -365,25 +345,33 @@
       <div class="entry-grid">
       <article class="entry-card accent-magenta">
         <header class="entry-head">
-          <span class="entry-title"><span class="emoji">📝</span>codely → </span>
+          <span class="entry-title"><span class="emoji">📝</span>CAP theorem</span>
         </header>
-        
-        <div class="tags"><span class="tag">courses</span><span class="tag">infrastructure</span></div>
-        
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note referencing the CAP theorem in the context of distributed changelog generation.</p>
+        <div class="tags"><span class="tag">Software Engineering</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://www.ibm.com/es-es/think/topics/cap-theorem" target="_blank" rel="noopener">https://www.ibm.com/es-es/think/topics/cap-theorem</a></div>
       </article>
       <article class="entry-card accent-magenta">
         <header class="entry-head">
-          <span class="entry-title"><span class="emoji">📝</span>Codely → Patrones de Diseño: Criteria</span>
+          <span class="entry-title"><span class="emoji">📝</span>Object design practice - Library loan</span>
         </header>
-        
-        <div class="tags"><span class="tag">courses</span><span class="tag">patterns</span></div>
-        
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note on applying object design principles to library loan system modeling.</p>
+        <div class="tags"><span class="tag">modeling</span><span class="tag">kata</span></div>
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://emmanuelvalverderamos.substack.com/p/kata-2-library-loan?utm_campaign=post&amp;utm_medium=web" target="_blank" rel="noopener">https://emmanuelvalverderamos.substack.com/p/kata-2-library-loan?utm_campaign=post&amp;utm_medium=web</a></div>
       </article></div>
     </section>
     
   </div>
+  <div class="how-modal" id="how-it-works">
+    <a class="how-backdrop" href="#_" aria-label="Close"></a>
+    <figure class="how-panel">
+      <a class="how-close" href="#_" aria-label="Close">&times;</a>
+      <div class="how-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" font-family="Poppins, sans-serif" aria-label="How the weekly changelog works: a GitHub Actions cron pulls GitHub and Notion activity into a domain hexagon, an optional free-tier LLM chain adds a digest, a card and dashboard are rendered, and a Telegram approval decides whether the post reaches LinkedIn."><rect width="1200" height="900" fill="none"/><text x="52" y="86" font-size="38" font-weight="700" fill="var(--text-primary)" text-anchor="start">How this works</text><text x="52" y="118" font-size="16" font-weight="400" fill="var(--text-muted)" text-anchor="start">A week of commits and notes, turned into a post — and nothing published without a human yes.</text><rect x="52" y="196" width="240" height="100" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(76 233) scale(1.0833)"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" fill="var(--text-primary)"/></g><text x="118" y="242" font-size="18" font-weight="600" fill="var(--text-primary)" text-anchor="start">GitHub Actions</text><text x="118" y="264" font-size="12" font-weight="400" fill="var(--text-muted)" text-anchor="start">cron · every Wed 07:25 UTC</text><line x1="222" y1="306" x2="222.0" y2="400.1" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round"/><polygon points="222,412 217.7,400.1 226.3,400.1" fill="var(--text-muted)"/><rect x="380" y="190" width="520" height="152" rx="18" fill="var(--accent-purple-bg)" stroke="var(--accent-purple)" stroke-width="1.5" stroke-dasharray="7 6"/><text x="640" y="218" font-size="11.5" font-weight="400" fill="var(--accent-purple)" text-anchor="middle" letter-spacing="0.6">SourceSynthesizer · first free-tier provider that answers wins</text><rect x="400" y="238" width="200" height="84" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(414 252) scale(0.7500)"><path d="M12 1.6l2.05 6.35L20.4 12l-6.35 2.05L12 20.4l-2.05-6.35L3.6 12l6.35-2.05z" fill="var(--accent-purple)"/></g><text x="500" y="282" font-size="19" font-weight="600" fill="var(--text-primary)" text-anchor="middle">Mistral</text><text x="500" y="304" font-size="12" font-weight="400" fill="var(--text-muted)" text-anchor="middle">primary</text><rect x="680" y="238" width="200" height="84" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(694 252) scale(0.7500)"><path d="M12 1.6l2.05 6.35L20.4 12l-6.35 2.05L12 20.4l-2.05-6.35L3.6 12l6.35-2.05z" fill="var(--accent-purple)"/></g><text x="780" y="282" font-size="19" font-weight="600" fill="var(--text-primary)" text-anchor="middle">Groq</text><text x="780" y="304" font-size="12" font-weight="400" fill="var(--text-muted)" text-anchor="middle">fallback</text><line x1="606" y1="280" x2="662.1" y2="280.0" stroke="var(--accent-purple)" stroke-width="1.8" stroke-linecap="round"/><polygon points="674,280 662.1,284.3 662.1,275.7" fill="var(--accent-purple)"/><text x="640" y="266" font-size="10.5" font-weight="400" fill="var(--accent-purple)" text-anchor="middle">on error</text><line x1="444" y1="402.39745962155615" x2="444.0" y2="361.9" stroke="var(--accent-purple)" stroke-width="1.8" stroke-linecap="round"/><polygon points="444,350 448.3,361.9 439.7,361.9" fill="var(--accent-purple)"/><text x="434" y="380" font-size="11" font-weight="400" fill="var(--accent-purple)" text-anchor="end">activities</text><line x1="736" y1="350" x2="736.0" y2="400.1" stroke="var(--accent-purple)" stroke-width="1.8" stroke-linecap="round"/><polygon points="736,412 731.7,400.1 740.3,400.1" fill="var(--accent-purple)"/><text x="746" y="380" font-size="11" font-weight="400" fill="var(--accent-purple)" text-anchor="start">digest (optional)</text><text x="56" y="404" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start" letter-spacing="3">SOURCES</text><text x="348" y="404" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start" letter-spacing="3">DOMAIN</text><text x="640" y="404" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start" letter-spacing="3">RENDER</text><text x="932" y="404" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start" letter-spacing="3">APPROVAL</text><rect x="52" y="420" width="200" height="150" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(72 452) scale(0.9167)"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" fill="var(--text-primary)"/></g><text x="104" y="462" font-size="17" font-weight="600" fill="var(--text-primary)" text-anchor="start">GitHub</text><text x="104" y="481" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start">commits · PRs · repos</text><line x1="72" y1="498" x2="232" y2="498" stroke="var(--border)" stroke-width="1"/><g transform="translate(72 518) scale(0.9167)"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.263c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952l1.448.327s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854l-1.168-.093c-.093-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.746l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z" fill="var(--text-primary)"/></g><text x="104" y="528" font-size="17" font-weight="600" fill="var(--text-primary)" text-anchor="start">Notion</text><text x="104" y="547" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start">notes · learnings</text><polygon points="544.0,495.0 494.0,408.4 394.0,408.4 344.0,495.0 394.0,581.6 494.0,581.6" fill="var(--tag-bg)" stroke="var(--text-secondary)" stroke-width="1.8"/><text x="444" y="490" font-size="23" font-weight="600" fill="var(--text-primary)" text-anchor="middle">Activity[]</text><text x="444" y="514" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">pure domain · last 7 days</text><text x="444" y="620" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">every labelled arrow is a port — swap the adapter, the hexagon never moves</text><rect x="636" y="420" width="200" height="150" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(656 452) scale(0.9167)"><path d="M2.5 4.5h19a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-19a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1zm1 2v9.2l4.8-4.3 3.6 3.2 4.2-4.4 3.4 3.3V6.5zM7 8a1.6 1.6 0 1 0 0 3.2A1.6 1.6 0 0 0 7 8z" fill="var(--text-primary)"/></g><text x="688" y="462" font-size="17" font-weight="600" fill="var(--text-primary)" text-anchor="start">card.png</text><text x="688" y="481" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start">satori + resvg</text><line x1="656" y1="498" x2="816" y2="498" stroke="var(--border)" stroke-width="1"/><g transform="translate(656 518) scale(0.9167)"><path d="M2.5 3.5h19a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-19a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1zm1 5v10h17v-10zm1.6-3.1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm3 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="var(--text-primary)"/></g><text x="688" y="528" font-size="17" font-weight="600" fill="var(--text-primary)" text-anchor="start">dashboard.html</text><text x="688" y="547" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="start">GitHub Pages</text><rect x="928" y="420" width="200" height="150" rx="14" fill="var(--accent-magenta-bg)" stroke="var(--accent-magenta)" stroke-width="1.5"/><g transform="translate(1013 446) scale(1.2500)"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" fill="var(--accent-magenta)"/></g><text x="1028" y="508" font-size="19" font-weight="600" fill="var(--text-primary)" text-anchor="middle">Telegram</text><text x="1028" y="528" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">the card lands in my chat</text><text x="1028" y="549" font-size="12.5" font-weight="500" fill="var(--accent-magenta)" text-anchor="middle">I reply  yes / no</text><line x1="256" y1="495" x2="328.1" y2="495.0" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round"/><polygon points="340,495 328.1,499.3 328.1,490.7" fill="var(--text-muted)"/><text x="298" y="481" font-size="10.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">SourceRetriever</text><line x1="548" y1="495" x2="620.1" y2="495.0" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round"/><polygon points="632,495 620.1,499.3 620.1,490.7" fill="var(--text-muted)"/><text x="590" y="481" font-size="10.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">render</text><line x1="840" y1="495" x2="912.1" y2="495.0" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round"/><polygon points="924,495 912.1,499.3 912.1,490.7" fill="var(--text-muted)"/><text x="882" y="481" font-size="10.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">Checker</text><rect x="636" y="646" width="200" height="112" rx="14" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><g transform="translate(725 672) scale(0.9167)"><path d="M12 1.8A10.2 10.2 0 1 0 12 22.2 10.2 10.2 0 0 0 12 1.8zm0 2.4a7.8 7.8 0 0 1 4.72 1.6L5.8 16.72A7.8 7.8 0 0 1 12 4.2zm0 15.6a7.8 7.8 0 0 1-4.72-1.6L18.2 7.28A7.8 7.8 0 0 1 12 19.8z" fill="var(--text-muted)"/></g><text x="736" y="716" font-size="17" font-weight="600" fill="var(--text-secondary)" text-anchor="middle">Discarded</text><text x="736" y="736" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">nothing is published</text><rect x="928" y="646" width="200" height="112" rx="14" fill="var(--accent-blue-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/><g transform="translate(1016 670) scale(1.0000)"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="var(--accent-blue)"/></g><text x="1028" y="716" font-size="17" font-weight="600" fill="var(--text-primary)" text-anchor="middle">LinkedIn</text><text x="1028" y="736" font-size="11.5" font-weight="400" fill="var(--text-muted)" text-anchor="middle">post + card + dashboard</text><path d="M 1028 570 V 606 H 736" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="736" y1="606" x2="736.0" y2="626.1" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round"/><polygon points="736,638 731.7,626.1 740.3,626.1" fill="var(--text-muted)"/><line x1="1028" y1="606" x2="1028.0" y2="626.1" stroke="var(--accent-blue)" stroke-width="1.8" stroke-linecap="round"/><polygon points="1028,638 1023.7,626.1 1032.3,626.1" fill="var(--accent-blue)"/><text x="726" y="630" font-size="12" font-weight="400" fill="var(--text-muted)" text-anchor="end">no</text><text x="1038" y="630" font-size="12" font-weight="400" fill="var(--accent-blue)" text-anchor="start">yes · Sender</text><line x1="52" y1="798" x2="1148" y2="798" stroke="var(--border)" stroke-width="1"/><rect x="52" y="826" width="240.60000000000002" height="40" rx="20" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><text x="172.3" y="851" font-size="13" font-weight="400" fill="var(--text-muted)" text-anchor="middle">TypeScript · ports &amp; adapters</text><rect x="306.6" y="826" width="166.6" height="40" rx="20" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><text x="389.90000000000003" y="851" font-size="13" font-weight="400" fill="var(--text-muted)" text-anchor="middle">1 LLM call per week</text><rect x="487.20000000000005" y="826" width="240.60000000000002" height="40" rx="20" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><text x="607.5" y="851" font-size="13" font-weight="400" fill="var(--text-muted)" text-anchor="middle">every provider on a free tier</text><rect x="741.8000000000001" y="826" width="181.4" height="40" rx="20" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1.5"/><text x="832.5000000000001" y="851" font-size="13" font-weight="400" fill="var(--text-primary)" text-anchor="middle">no AI? it still ships</text></svg></div>
+      <figcaption class="how-caption">Every Wednesday a GitHub Action collects the week from GitHub and Notion, normalises it into one <code>Activity</code> shape, asks a free-tier LLM for a digest &mdash; optional, the run never fails on it &mdash; renders the card and this dashboard, and waits for a yes on Telegram before anything reaches LinkedIn.</figcaption>
+    </figure>
+  </div>
   <footer>
-    Generated Aug 5, 12:36 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Aug 16, 12:44 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>
