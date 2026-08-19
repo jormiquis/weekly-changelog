@@ -260,14 +260,14 @@
       <h1>Weekly Changelog</h1>
       <div class="header-actions">
         <a class="how-link" href="#how-it-works">How this works?</a>
-        <span class="week-pill">Week of Aug 16</span>
+        <span class="week-pill">Week of Aug 19</span>
       </div>
     </header>
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
       <h2 class="digest-headline">How-it-works diagram added to changelog dashboard</h2>
-      <p class="digest-summary">A visual pipeline diagram is now available to explain the changelog generation flow. The dashboard gains a themed inline SVG and a PNG export for external use.</p>
+      <p class="digest-summary">A pipeline diagram is now embedded in the changelog dashboard and exportable as PNG. The week’s commits are summarized with new visual context.</p>
     </section>
     
     
@@ -277,21 +277,21 @@
       <article class="repo-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
-          <span class="repo-product">automated changelog generator</span>
+          <span class="repo-product">a changelog automation tool</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A new pipeline diagram illustrates the end-to-end changelog process. The dashboard now includes a themed inline SVG and a PNG export for LinkedIn and README use.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A responsive diagram illustrating the end-to-end changelog pipeline is now available in the dashboard and as a PNG export. The diagram is themed to match light or dark mode and can be opened inline from the header.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>How-it-works diagram added to dashboard header</li><li>Pipeline diagram exported as PNG for external sharing</li><li>Diagram follows light/dark theme automatically</li><li>SVG diagram accessible via How this works? link</li></ul>
+          <ul class="changes"><li>How-it-works diagram added to dashboard header</li><li>Interactive modal overlay for viewing the pipeline diagram</li><li>PNG export of the diagram for LinkedIn and README</li><li>Diagram follows dashboard theme automatically</li></ul>
         </div>
         <div class="repo-highlights">
           <span class="block-label">Decisions</span>
           <div class="highlight-grid">
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Theme-aware SVG rendering</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Theme-aware SVG generation</span>
           </header>
-          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Hardcoded color values</span></p>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Hardcoded SVG colors</span></p>
           <div class="highlight-body">
             <pre class="code-panel"><code class="language-typescript">export const themedPalette: DiagramPalette = {
   background: &#39;none&#39;,
@@ -309,31 +309,61 @@
   publishSurface: &#39;var(--accent-blue-bg)&#39;,
 }</code></pre>
             <pre class="mermaid">flowchart TD
-  A[Dashboard CSS Variables] --&gt; B[DiagramPalette Interface]
-  B --&gt; C[Inline SVG Rendering]
-  B --&gt; D[PNG Export with Literal Colors]</pre>
+  A[Dashboard CSS variables] --&gt; B[SVG diagram]
+  B --&gt; C[Light or dark theme]
+  C --&gt; D[Automatic color adaptation]</pre>
           </div>
         </article>
         <article class="highlight-card">
           <header class="highlight-head">
-            <span class="highlight-title"><span class="ai-badge">AI</span>Modular diagram generation pipeline</span>
+            <span class="highlight-title"><span class="ai-badge">AI</span>Separation of concerns for exports</span>
           </header>
-          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Monolithic diagram script</span></p>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Single SVG for all outputs</span></p>
           <div class="highlight-body">
-            <pre class="code-panel"><code class="language-typescript">import { writeFileSync } from &#39;fs&#39;;
-import { renderHowItWorksPng } from &#39;./renderHowItWorks.js&#39;;
-
-const target = process.argv[2] || &#39;docs/how-it-works.png&#39;
-writeFileSync(target, renderHowItWorksPng())
-console.log(`How-it-works diagram written to ${target}`)</code></pre>
+            <pre class="code-panel"><code class="language-typescript">export const darkPalette: DiagramPalette = {
+  background: &#39;#0d0d0d&#39;,
+  surface: &#39;rgba(255, 255, 250, 0.05)&#39;,
+  border: &#39;rgba(255, 255, 255, 0.12)&#39;,
+  textPrimary: &#39;#ffffff&#39;,
+  textSecondary: &#39;#c3c2b7&#39;,
+  textMuted: &#39;#898781&#39;,
+  line: &#39;rgba(255, 255, 255, 0.34)&#39;,
+  ai: &#39;#a78bfa&#39;,
+  aiSurface: &#39;rgba(167, 139, 250, 0.12)&#39;,
+  gate: &#39;#d55181&#39;,
+  gateSurface: &#39;rgba(213, 81, 129, 0.12)&#39;,
+  publish: &#39;#3b82f6&#39;,
+  publishSurface: &#39;rgba(59, 130, 246, 0.12)&#39;,
+}</code></pre>
             <pre class="mermaid">flowchart TD
-  A[CLI Command] --&gt; B[generate.ts]
-  B --&gt; C[renderHowItWorksPng]
-  C --&gt; D[PNG File Output]</pre>
+  A[SVG with CSS variables] --&gt; B[PNG export via resvg]
+  C[Literal colors for export] --&gt; D[Dark palette constants]
+  D --&gt; E[No CSS resolution required]</pre>
+          </div>
+        </article>
+        <article class="highlight-card">
+          <header class="highlight-head">
+            <span class="highlight-title"><span class="ai-badge">AI</span>Modular diagram generation</span>
+          </header>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Inline diagram markup</span></p>
+          <div class="highlight-body">
+            <pre class="code-panel"><code class="language-typescript">export function renderHowItWorksPng(): Buffer {
+  const svg = renderHowItWorksSvg(darkPalette);
+  return resvg.render(svg, {
+    width: 1200,
+    height: 900,
+    background: darkPalette.background,
+  });
+}</code></pre>
+            <pre class="mermaid">flowchart TD
+  A[generate.ts] --&gt; B[renderHowItWorksPng]
+  B --&gt; C[renderHowItWorksSvg]
+  C --&gt; D[DiagramPalette]
+  D --&gt; E[resvg render call]</pre>
           </div>
         </article></div>
         </div>
-        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/cabe441025a2d7acc06d04106ff7181a3aaa202f...86847a92361aadae0d4ca4d6ab0080c44f393260.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/cabe441025a2d7acc06d04106ff7181a3aaa202f...e2a40a440184508460129c4f8766e423c0435302.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
@@ -347,7 +377,7 @@ console.log(`How-it-works diagram written to ${target}`)</code></pre>
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>CAP theorem</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note referencing the CAP theorem in the context of distributed changelog generation.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note referencing the CAP theorem for distributed system design considerations.</p>
         <div class="tags"><span class="tag">Software Engineering</span></div>
         <div class="sources"><span class="sources-label">Sources</span><a href="https://www.ibm.com/es-es/think/topics/cap-theorem" target="_blank" rel="noopener">https://www.ibm.com/es-es/think/topics/cap-theorem</a></div>
       </article>
@@ -355,7 +385,7 @@ console.log(`How-it-works diagram written to ${target}`)</code></pre>
         <header class="entry-head">
           <span class="entry-title"><span class="emoji">📝</span>Object design practice - Library loan</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note on applying object design principles to library loan system modeling.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A note on object design practices related to library loan systems.</p>
         <div class="tags"><span class="tag">modeling</span><span class="tag">kata</span></div>
         <div class="sources"><span class="sources-label">Sources</span><a href="https://emmanuelvalverderamos.substack.com/p/kata-2-library-loan?utm_campaign=post&amp;utm_medium=web" target="_blank" rel="noopener">https://emmanuelvalverderamos.substack.com/p/kata-2-library-loan?utm_campaign=post&amp;utm_medium=web</a></div>
       </article></div>
@@ -371,7 +401,7 @@ console.log(`How-it-works diagram written to ${target}`)</code></pre>
     </figure>
   </div>
   <footer>
-    Generated Aug 16, 12:44 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Aug 19, 7:58 AM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>
