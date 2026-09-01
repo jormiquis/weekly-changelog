@@ -11,6 +11,26 @@ function work(title: string, tags = ['work']) {
   return Activity.create(new Date(), { source: 'notion', entry_emoji: '💼', tags, sources: [], title });
 }
 
+function createdRepo(repo: string, description = '') {
+  return Activity.create(new Date(), {
+    source: 'github',
+    type: 'CreateEvent',
+    entityCreated: 'repository',
+    repo,
+    description,
+  });
+}
+
+function fork(sourceRepo: string, forkName: string) {
+  return Activity.create(new Date(), {
+    source: 'github',
+    type: 'ForkEvent',
+    sourceRepo,
+    fork: forkName,
+    forkUrl: `https://github.com/${forkName}`,
+  });
+}
+
 const digest: SynthesizedDigest = {
   headline: 'A focused week',
   summary: 'Steady progress across a few products.',
@@ -63,6 +83,73 @@ describe('buildCardData', () => {
     const card = buildCardData(activities, { week: 'Week of Jul 15', digest });
 
     expect(card.learnings).toEqual(['Ports & adapters', 'Free-tier LLMs']);
+  });
+
+  it('adds a bullet per fork, without AI, so a fork-only week still fills the column', () => {
+    const activities = [fork('jmiquis/pokedex', 'jormiquis/pokedex')];
+
+    const card = buildCardData(activities, { week: 'Week of Sep 1' });
+
+    expect(card.sideProjects).toEqual([
+      { project: 'pokedex', text: 'forked from jmiquis/pokedex' },
+    ]);
+  });
+
+  it('adds a bullet per new repository, without AI, even when it carries no commits', () => {
+    const activities = [createdRepo('jormiquis/budget-api', 'A personal finance API')];
+
+    const card = buildCardData(activities, { week: 'Week of Sep 1' });
+
+    expect(card.sideProjects).toEqual([
+      { project: 'budget-api', text: 'new repository' },
+    ]);
+  });
+
+  it('groups a new repository under the same project label as its AI bullets', () => {
+    const activities = [createdRepo('jormiquis/app')];
+
+    const card = buildCardData(activities, { week: 'Week of Sep 1', digest });
+
+    expect(card.sideProjects).toEqual([
+      { project: 'app', text: 'New login flow' },
+      { project: 'api', text: 'Users endpoint' },
+      { project: 'app', text: 'Composition over inheritance' },
+      { project: 'app', text: 'new repository' },
+    ]);
+  });
+
+  it('keeps the milestone bullets when the AI already filled the column', () => {
+    const activities = [fork('jmiquis/pokedex', 'jormiquis/pokedex')];
+    const wideDigest: SynthesizedDigest = {
+      ...digest,
+      sideProjects: { bullets: ['s1', 's2', 's3', 's4'].map(text => ({ project: 'app', text })) },
+    };
+
+    const card = buildCardData(activities, { week: 'Week of Sep 1', digest: wideDigest });
+
+    expect(card.sideProjects).toEqual([
+      { project: 'app', text: 's1' },
+      { project: 'app', text: 's2' },
+      { project: 'app', text: 's3' },
+      { project: 'pokedex', text: 'forked from jmiquis/pokedex' },
+    ]);
+  });
+
+  it('caps new repos and forks at two between them, so they never crowd out the AI', () => {
+    const activities = [
+      createdRepo('jormiquis/a'),
+      createdRepo('jormiquis/b'),
+      fork('upstream/c', 'jormiquis/c'),
+    ];
+
+    const card = buildCardData(activities, { week: 'Week of Sep 1', digest });
+
+    expect(card.sideProjects).toEqual([
+      { project: 'app', text: 'New login flow' },
+      { project: 'api', text: 'Users endpoint' },
+      { project: 'a', text: 'new repository' },
+      { project: 'b', text: 'new repository' },
+    ]);
   });
 
   it('caps sideProjects at four and learnings at two', () => {
