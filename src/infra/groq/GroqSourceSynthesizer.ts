@@ -4,7 +4,7 @@ import { parseDigestResponse } from '../../domain/parseDigestResponse.js';
 import type { SourceSynthesizer } from '../../domain/SourceSynthesizer.js';
 import type { SynthesizedDigest } from '../../domain/SynthesizedDigest.js';
 
-const DEFAULT_MODEL = 'llama-3.1-8b-instant';
+const DEFAULT_MODEL = 'openai/gpt-oss-20b';
 
 export class GroqSourceSynthesizer implements SourceSynthesizer {
   constructor(
