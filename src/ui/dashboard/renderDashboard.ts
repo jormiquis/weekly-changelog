@@ -196,90 +196,93 @@ export function renderDashboard(data: DashboardData): string {
   <meta property="og:image" content="card.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Monoton&display=swap" rel="stylesheet">
   ${hasHighlights ? '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">' : ''}
   <style>
     :root {
       color-scheme: light;
-      --page-plane: #f9f9f7;
-      --surface: #fcfcfb;
-      --text-primary: #0b0b0b;
-      --text-secondary: #52514e;
-      --text-muted: #898781;
-      --border: rgba(11, 11, 11, 0.10);
-      --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 6px 16px rgba(11, 11, 11, 0.05);
+      --font-display: 'Monoton', cursive;
+      --font-mono: 'Space Mono', ui-monospace, monospace;
+      --page-plane: #f6f1fb;
+      --surface: #fffdfa;
+      --text-primary: #241b3a;
+      --text-secondary: #5b4b7a;
+      --text-muted: #8a7aa8;
+      --border: rgba(36, 27, 58, 0.14);
+      --shadow: 4px 4px 0 rgba(36, 27, 58, 0.12);
 
-      --accent-blue: #2a78d6;
-      --accent-blue-bg: rgba(42, 120, 214, 0.10);
-      --accent-green: #008300;
-      --accent-green-bg: rgba(0, 131, 0, 0.10);
-      --accent-magenta: #c2427a;
-      --accent-magenta-bg: rgba(232, 123, 164, 0.16);
-      --accent-yellow: #eda100;
-      --accent-yellow-bg: rgba(237, 161, 0, 0.14);
-      --accent-purple: #7c3aed;
-      --accent-purple-bg: rgba(124, 58, 237, 0.10);
+      --accent-blue: #0091ff;
+      --accent-blue-bg: rgba(0, 145, 255, 0.10);
+      --accent-green: #00b8a9;
+      --accent-green-bg: rgba(0, 184, 169, 0.12);
+      --accent-magenta: #ff2e93;
+      --accent-magenta-bg: rgba(255, 46, 147, 0.10);
+      --accent-yellow: #ff8a00;
+      --accent-yellow-bg: rgba(255, 138, 0, 0.12);
+      --accent-purple: #8b5cf6;
+      --accent-purple-bg: rgba(139, 92, 246, 0.10);
 
-      --add-color: #0a7f28;
-      --del-color: #c0392f;
-      --tag-bg: rgba(11, 11, 11, 0.05);
+      --add-color: #00875a;
+      --del-color: #d6294a;
+      --tag-bg: rgba(36, 27, 58, 0.06);
     }
 
     @media (prefers-color-scheme: dark) {
       :root:where(:not([data-theme="light"])) {
         color-scheme: dark;
-        --page-plane: #0d0d0d;
-        --surface: #1a1a19;
-        --text-primary: #ffffff;
-        --text-secondary: #c3c2b7;
-        --text-muted: #898781;
-        --border: rgba(255, 255, 255, 0.10);
-        --shadow: none;
+        --page-plane: #150c26;
+        --surface: #1f1436;
+        --text-primary: #fbf7ff;
+        --text-secondary: #c9baea;
+        --text-muted: #9585b8;
+        --border: rgba(185, 103, 255, 0.22);
+        --shadow: 0 0 0 1px rgba(185, 103, 255, 0.10), 0 0 22px rgba(185, 103, 255, 0.16);
 
-        --accent-blue: #3987e5;
-        --accent-blue-bg: rgba(57, 135, 229, 0.16);
-        --accent-green: #2fae2f;
-        --accent-green-bg: rgba(47, 174, 47, 0.16);
-        --accent-magenta: #d55181;
-        --accent-magenta-bg: rgba(213, 81, 129, 0.18);
-        --accent-yellow: #c98500;
-        --accent-yellow-bg: rgba(201, 133, 0, 0.18);
-        --accent-purple: #a78bfa;
-        --accent-purple-bg: rgba(167, 139, 250, 0.16);
+        --accent-blue: #00e5ff;
+        --accent-blue-bg: rgba(0, 229, 255, 0.14);
+        --accent-green: #39ff88;
+        --accent-green-bg: rgba(57, 255, 136, 0.14);
+        --accent-magenta: #ff2e93;
+        --accent-magenta-bg: rgba(255, 46, 147, 0.16);
+        --accent-yellow: #ffd60a;
+        --accent-yellow-bg: rgba(255, 214, 10, 0.14);
+        --accent-purple: #b967ff;
+        --accent-purple-bg: rgba(185, 103, 255, 0.16);
 
-        --add-color: #3fb950;
-        --del-color: #f85149;
-        --tag-bg: rgba(255, 255, 255, 0.06);
+        --add-color: #39ff88;
+        --del-color: #ff5470;
+        --tag-bg: rgba(185, 103, 255, 0.08);
       }
     }
 
     :root[data-theme="dark"] {
       color-scheme: dark;
-      --page-plane: #0d0d0d;
-      --surface: #1a1a19;
-      --text-primary: #ffffff;
-      --text-secondary: #c3c2b7;
-      --text-muted: #898781;
-      --border: rgba(255, 255, 255, 0.10);
-      --shadow: none;
+      --page-plane: #150c26;
+      --surface: #1f1436;
+      --text-primary: #fbf7ff;
+      --text-secondary: #c9baea;
+      --text-muted: #9585b8;
+      --border: rgba(185, 103, 255, 0.22);
+      --shadow: 0 0 0 1px rgba(185, 103, 255, 0.10), 0 0 22px rgba(185, 103, 255, 0.16);
 
-      --accent-blue: #3987e5;
-      --accent-blue-bg: rgba(57, 135, 229, 0.16);
-      --accent-green: #2fae2f;
-      --accent-green-bg: rgba(47, 174, 47, 0.16);
-      --accent-magenta: #d55181;
-      --accent-magenta-bg: rgba(213, 81, 129, 0.18);
-      --accent-yellow: #c98500;
-      --accent-yellow-bg: rgba(201, 133, 0, 0.18);
+      --accent-blue: #00e5ff;
+      --accent-blue-bg: rgba(0, 229, 255, 0.14);
+      --accent-green: #39ff88;
+      --accent-green-bg: rgba(57, 255, 136, 0.14);
+      --accent-magenta: #ff2e93;
+      --accent-magenta-bg: rgba(255, 46, 147, 0.16);
+      --accent-yellow: #ffd60a;
+      --accent-yellow-bg: rgba(255, 214, 10, 0.14);
 
-      --add-color: #3fb950;
-      --del-color: #f85149;
-      --tag-bg: rgba(255, 255, 255, 0.06);
+      --add-color: #39ff88;
+      --del-color: #ff5470;
+      --tag-bg: rgba(185, 103, 255, 0.08);
     }
 
     * { box-sizing: border-box; }
 
     body {
+      position: relative;
       margin: 0;
       min-height: 100vh;
       display: flex;
@@ -292,13 +295,34 @@ export function renderDashboard(data: DashboardData): string {
       color: var(--text-primary);
     }
 
-    .page { width: 100%; max-width: 1160px; display: flex; flex-direction: column; gap: clamp(24px, 4vw, 40px); }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: repeating-linear-gradient(0deg, rgba(185, 103, 255, 0.05) 0px, rgba(185, 103, 255, 0.05) 1px, transparent 1px, transparent 3px);
+    }
 
-    .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-    .page-header h1 { font-size: clamp(22px, 3vw, 28px); font-weight: 600; margin: 0; }
-    .week-pill { font-size: 14px; font-weight: 500; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 16px; border-radius: 999px; white-space: nowrap; }
+    .page { position: relative; z-index: 1; width: 100%; max-width: 1160px; display: flex; flex-direction: column; gap: clamp(24px, 4vw, 40px); }
 
-    .dashboard-section h2 { font-size: 18px; font-weight: 600; margin: 0 0 14px; color: var(--text-primary); }
+    .page-header { display: flex; flex-direction: column; gap: 16px; }
+    .page-header .header-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3.4vw, 34px);
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      margin: 0;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-magenta));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .header-stripe { height: 3px; border-radius: 999px; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-magenta)); }
+    .week-pill { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-secondary); background: var(--surface); border: 2px solid var(--border); padding: 6px 16px; border-radius: 999px; white-space: nowrap; }
+
+    .dashboard-section h2 { font-family: var(--font-mono); font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 14px; color: var(--text-primary); }
     .muted { color: var(--text-muted); font-size: 14px; margin: 0; }
 
     .entry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 14px; }
@@ -326,17 +350,17 @@ export function renderDashboard(data: DashboardData): string {
       box-shadow: var(--shadow);
       padding: 24px 28px;
     }
-    .digest-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+    .digest-eyebrow { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
     .digest-headline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; color: var(--text-primary); margin: 0 0 10px; }
     .digest-summary { font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
 
-    .ai-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; }
+    .ai-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--border); padding: 2px 6px; border-radius: 4px; }
 
     /* Metrics */
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 12px; margin-bottom: 16px; }
     .metric-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; }
     .metric-value { font-size: 26px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-    .metric-label { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+    .metric-label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
 
     .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 14px; }
     .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 20px; }
@@ -355,7 +379,7 @@ export function renderDashboard(data: DashboardData): string {
     .highlight-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--text-primary); }
     .highlight-repo { color: var(--accent-purple); background: var(--accent-purple-bg); }
     .decision-tradeoff { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: -6px 0 0; font-size: 13px; }
-    .tradeoff-label { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+    .tradeoff-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
     .tradeoff-discarded { color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--accent-purple); text-decoration-thickness: 1.5px; }
     .highlight-body { display: grid; grid-template-columns: 1fr; gap: 14px; }
     @media (min-width: 720px) { .highlight-body:has(.mermaid) { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; } }
@@ -376,8 +400,8 @@ export function renderDashboard(data: DashboardData): string {
       box-shadow: var(--shadow);
       padding: 20px 22px;
     }
-    .repo-product { font-size: 13.5px; font-weight: 500; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
-    .block-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+    .repo-product { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+    .block-label { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
     .product-changes { margin: 0 0 14px; }
     .changes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
     .changes li { position: relative; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary); word-break: break-word; }
@@ -394,7 +418,7 @@ export function renderDashboard(data: DashboardData): string {
     .diffstat .add { color: var(--add-color); }
     .diffstat .del { color: var(--del-color); }
 
-    .pill { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+    .pill { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
 
     .repo-evaluation { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); background: var(--tag-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
 
@@ -411,7 +435,7 @@ export function renderDashboard(data: DashboardData): string {
     .tag { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: var(--tag-bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; }
 
     .sources { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
-    .sources-label { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+    .sources-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
     .sources a, .sources span { color: var(--text-secondary); word-break: break-all; }
     .sources a { color: var(--accent-blue); }
 
@@ -419,7 +443,7 @@ export function renderDashboard(data: DashboardData): string {
 
     /* How this works — a link in the header opens the pipeline diagram over the page. */
     .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .how-link { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-purple); background: var(--accent-purple-bg); border: 1px solid var(--border); padding: 7px 16px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+    .how-link { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-purple); background: var(--accent-purple-bg); border: 1px solid var(--accent-purple); padding: 7px 16px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
     .how-link:hover { border-color: var(--accent-purple); }
     .how-modal { display: none; }
     .how-modal:target { display: flex; position: fixed; inset: 0; z-index: 30; align-items: center; justify-content: center; padding: clamp(12px, 3vw, 40px); }
@@ -445,11 +469,14 @@ export function renderDashboard(data: DashboardData): string {
 <body>
   <div class="page">
     <header class="page-header">
-      <h1>Weekly Changelog</h1>
-      <div class="header-actions">
-        <a class="how-link" href="#how-it-works">How this works?</a>
-        <span class="week-pill">${escapeHtml(data.week)}</span>
+      <div class="header-row">
+        <h1>Weekly Changelog</h1>
+        <div class="header-actions">
+          <a class="how-link" href="#how-it-works">How this works?</a>
+          <span class="week-pill">${escapeHtml(data.week)}</span>
+        </div>
       </div>
+      <div class="header-stripe"></div>
     </header>
     ${digestSection(data.digest)}
     ${workSection(data.work)}

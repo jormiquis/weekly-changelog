@@ -13,6 +13,7 @@ const fonts = [
   { name: 'Poppins', data: readFileSync(join(fontsDir, 'Poppins-Medium.ttf')), weight: 500 as const, style: 'normal' as const },
   { name: 'Poppins', data: readFileSync(join(fontsDir, 'Poppins-SemiBold.ttf')), weight: 600 as const, style: 'normal' as const },
   { name: 'Poppins', data: readFileSync(join(fontsDir, 'Poppins-Bold.ttf')), weight: 700 as const, style: 'normal' as const },
+  { name: 'Monoton', data: readFileSync(join(fontsDir, 'Monoton-Regular.ttf')), weight: 400 as const, style: 'normal' as const },
 ]
 
 async function loadAdditionalAsset(languageCode: string, segment: string) {
@@ -25,10 +26,11 @@ async function loadAdditionalAsset(languageCode: string, segment: string) {
   return []
 }
 
-const SIDE_PROJECTS_ACCENT = '#2fae2f'
-const AT_WORK_ACCENT = '#a78bfa'
-const LEARNINGS_ACCENT = '#d55181'
-const VERSION_ACCENT = '#3987e5'
+const SIDE_PROJECTS_ACCENT = '#00e5ff'
+const AT_WORK_ACCENT = '#b967ff'
+const LEARNINGS_ACCENT = '#ff2e93'
+const VERSION_ACCENT = '#ffb400'
+const HORIZON_STRIPE = 'linear-gradient(90deg, #00e5ff 0%, #b967ff 50%, #ff2e93 100%)'
 const COLUMN_GAP = 22
 const OUTER_PADDING_X = 56 // matches the card body's horizontal padding
 const COLUMN_PADDING_X = 26
@@ -165,18 +167,21 @@ function flat(bullets: string[]): Section[] {
 }
 
 function header(theme: CardTheme, data: CardData, title: string, subtitle: string): SatoriNode {
-  return box({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, [
-    box({ flexDirection: 'row', alignItems: 'center', gap: '18px' }, [
-      text('📋', { fontSize: '46px' }),
-      box({ flexDirection: 'column' }, [
-        text(title, { fontSize: '40px', fontWeight: 700, letterSpacing: '0.02em', color: theme.textPrimary }),
-        text(subtitle, { fontSize: '19px', fontWeight: 400, color: theme.textMuted, marginTop: '2px' })
+  return box({ flexDirection: 'column' }, [
+    box({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, [
+      box({ flexDirection: 'row', alignItems: 'center', gap: '18px' }, [
+        text('📋', { fontSize: '46px' }),
+        box({ flexDirection: 'column' }, [
+          text(title, { fontFamily: 'Monoton', fontSize: '34px', fontWeight: 400, letterSpacing: '0.04em', color: SIDE_PROJECTS_ACCENT }),
+          text(subtitle, { fontSize: '19px', fontWeight: 400, color: theme.textMuted, marginTop: '8px' })
+        ])
+      ]),
+      box({ flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }, [
+        text(data.version, { fontSize: '22px', fontWeight: 600, color: VERSION_ACCENT, backgroundColor: hexToRgba(VERSION_ACCENT, 0.14), border: `1px solid ${hexToRgba(VERSION_ACCENT, 0.5)}`, padding: '8px 20px', borderRadius: '999px' }),
+        text(data.week, { fontSize: '17px', color: theme.textMuted })
       ])
     ]),
-    box({ flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }, [
-      text(data.version, { fontSize: '22px', fontWeight: 600, color: VERSION_ACCENT, backgroundColor: hexToRgba(VERSION_ACCENT, 0.14), padding: '8px 20px', borderRadius: '999px' }),
-      text(data.week, { fontSize: '17px', color: theme.textMuted })
-    ])
+    box({ width: '100%', height: '3px', background: HORIZON_STRIPE, borderRadius: '999px', marginTop: '26px' }, []),
   ])
 }
 
