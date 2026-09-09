@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Monoton&display=swap" rel="stylesheet">
-  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
   <style>
     :root {
       color-scheme: light;
@@ -285,7 +285,7 @@
         <h1>Weekly Changelog</h1>
         <div class="header-actions">
           <a class="how-link" href="#how-it-works">How this works?</a>
-          <span class="week-pill">Week of Sep 8</span>
+          <span class="week-pill">Week of Sep 9</span>
         </div>
       </div>
       <div class="header-stripe"></div>
@@ -293,8 +293,8 @@
     
     <section class="digest-hero accent-yellow">
       <p class="digest-eyebrow"><span class="ai-badge">AI</span>This week</p>
-      <h2 class="digest-headline">Guess Game Refines Feedback, Hackerrank Merge Solved</h2>
-      <p class="digest-summary">This week saw enhancements to the guessing game feedback and completion of a merge intervals exercise.</p>
+      <h2 class="digest-headline">Weekly Product Updates: Guessing Game, Changelog, and Exercises</h2>
+      <p class="digest-summary">This week focused on refining user experience across the guessing game, enhancing the visual theme of the changelog, and completing a medium difficulty exercise.</p>
     </section>
     
     
@@ -304,12 +304,12 @@
       <article class="repo-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/hackerrank-exercises" target="_blank" rel="noopener">hackerrank-exercises</a>
-          <span class="repo-product">a coding challenge solution repository</span>
+          <span class="repo-product">a hackerrank exercises library</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The merge intervals exercise has been completed. An additional annotation was removed from Easy.java. Tests now cover merged output.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>A medium‑level interval merge exercise was completed, and an obsolete annotation was removed to streamline the code. The solution now correctly merges overlapping intervals.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>Implemented merge intervals algorithm</li><li>Removed unused annotation</li><li>Enhanced easy exercise</li></ul>
+          <ul class="changes"><li>Completed medium merge intervals exercise</li><li>Removed obsolete annotation</li></ul>
         </div>
         
         <a class="diff-link" href="https://github.com/jormiquis/hackerrank-exercises/compare/d7502c4892c61dfa6002cabc441a9bf9e2538c27...2a3d73c38d02197dc92eb7200d4f19c577e7eacf.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
@@ -317,21 +317,72 @@
       <article class="repo-card accent-blue">
         <header class="entry-head">
           <a class="entry-title" href="https://github.com/jormiquis/tdd-katas" target="_blank" rel="noopener">tdd-katas</a>
-          <span class="repo-product">a guessing game simulator</span>
+          <span class="repo-product">a guessing number game</span>
         </header>
-        <p class="repo-evaluation"><span class="ai-badge">AI</span>The game now provides clear higher or lower hints. The response when the guessed number matches the generated one remains unchanged. Tests verify both scenarios.</p>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>The game now provides higher or lower hints, correct win messages, and supports lower number win cases. Class naming conventions and test structure were improved for clarity.</p>
         <div class="product-changes">
           <span class="block-label">What changed in the product</span>
-          <ul class="changes"><li>Added higher number hint</li><li>Added lower number hint</li><li>Refactored test class name</li></ul>
+          <ul class="changes"><li>Enhanced number feedback with higher/lower hints</li><li>Fixed win message for exact guess</li><li>Added support for lower number win case</li></ul>
+        </div>
+        <div class="repo-highlights">
+          <span class="block-label">Decisions</span>
+          <div class="highlight-grid">
+        <article class="highlight-card">
+          <header class="highlight-head">
+            <span class="highlight-title"><span class="ai-badge">AI</span>Dependency injection</span>
+          </header>
+          <p class="decision-tradeoff"><span class="tradeoff-label">Chosen over</span> <span class="tradeoff-discarded">Hardcoded random number generator</span></p>
+          <div class="highlight-body">
+            <pre class="code-panel"><code class="language-typescript">interface RandomNumberGenerator {
+  generate(): number;
+}
+
+class TestRandomNumberGenerator implements RandomNumberGenerator {
+  generate(): number {
+    return 6;
+  }
+}
+
+const generator: RandomNumberGenerator = new TestRandomNumberGenerator();
+const game = new GuessingNumberGame(generator);</code></pre>
+            <pre class="mermaid">flowchart LR
+  TestRandomNumberGenerator --&gt; GuessingNumberGame
+  GuessingNumberGame --&gt; RandomNumberGenerator</pre>
+          </div>
+        </article></div>
+        </div>
+        <a class="diff-link" href="https://github.com/jormiquis/tdd-katas/compare/2883536e1058b24be7090c83d3bc0a16e736009a...bdd786a49fe800b33a72002247336f1ec3f724b6.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+      </article>
+      <article class="repo-card accent-blue">
+        <header class="entry-head">
+          <a class="entry-title" href="https://github.com/jormiquis/weekly-changelog" target="_blank" rel="noopener">weekly-changelog</a>
+          <span class="repo-product">a weekly changelog card generator</span>
+        </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>The visual design was refreshed to a retro shell suit theme, incorporating new fonts and a revised color palette with dynamic gradients. Accent colors were updated for better contrast.</p>
+        <div class="product-changes">
+          <span class="block-label">What changed in the product</span>
+          <ul class="changes"><li>Updated card theme to retro shell suit</li><li>Incorporated Monoton and Space Mono fonts</li><li>Revamped accent colors and background gradient</li></ul>
         </div>
         
-        <a class="diff-link" href="https://github.com/jormiquis/tdd-katas/compare/2883536e1058b24be7090c83d3bc0a16e736009a...2883536e1058b24be7090c83d3bc0a16e736009a.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
+        <a class="diff-link" href="https://github.com/jormiquis/weekly-changelog/compare/e65d5c4e8286a89b3fa2e11c9ca4f342977927e8...14093caec4f02f72a479a996b162a5ec3e7ddf90.diff" target="_blank" rel="noopener">View full diff &rarr;</a>
       </article></div>
     </section>
     
     
     
     
+    <section class="dashboard-section">
+      <h2>Learnings</h2>
+      <div class="entry-grid">
+      <article class="entry-card accent-magenta">
+        <header class="entry-head">
+          <span class="entry-title"><span class="emoji">📝</span>Idempotencia en requests</span>
+        </header>
+        <p class="repo-evaluation"><span class="ai-badge">AI</span>Ensured API requests are idempotent, preventing duplicate operations.</p>
+        
+        <div class="sources"><span class="sources-label">Sources</span><a href="https://docs.aws.amazon.com/es_es/ec2/latest/devguide/ec2-api-idempotency.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/es_es/ec2/latest/devguide/ec2-api-idempotency.html</a></div>
+      </article></div>
+    </section>
     
   </div>
   <div class="how-modal" id="how-it-works">
@@ -343,9 +394,13 @@
     </figure>
   </div>
   <footer>
-    Generated Sep 8, 5:37 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
+    Generated Sep 9, 5:34 PM &middot; <a href="https://github.com/jormiquis/weekly-changelog">weekly-changelog</a>
   </footer>
-  
-  
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script>window.hljs && document.querySelectorAll('.code-panel code').forEach(function (block) { window.hljs.highlightElement(block) });</script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'strict' });
+  </script>
 </body>
 </html>

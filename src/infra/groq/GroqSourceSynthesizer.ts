@@ -24,7 +24,8 @@ export class GroqSourceSynthesizer implements SourceSynthesizer {
       body: JSON.stringify({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
+        max_completion_tokens: 16000
       })
     });
 
